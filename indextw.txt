@@ -1,0 +1,3703 @@
+<?php include('lock1.php');?>
+<html>
+<head>
+<title>ftw_genome2021</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script type="text/javascript" src="js/jquery-latest.min.js"></script>
+<script type="text/javascript" src="js/ajaxfileupload.js"></script>
+<script type="text/javascript" language="javascript" src="js/datatables.js"></script>
+<link rel="stylesheet" type="text/css" href="DataTables/css/datatables.css" >
+<script type="text/javascript" language="javascript" src="media/js/TableTools.js"></script>
+<script type="text/javascript" charset="utf-8" src="media/js/ZeroClipboard.js"></script>
+<script src="js/d3.v3.js"></script>
+<link rel="stylesheet" type="text/css" href="js/heatmap.require.min.css" >
+<script src="js/heatmap.require.min.js"></script>
+<script src="js/svg.min.js"></script>
+<script src="js/svg_plot.min.js"></script>
+<script src="js/jquery.watermarkinput.js" type="text/javascript"></script>
+    <script src="bootstrap-dist/js/bootstrap.min.js"></script>
+    <link href="bootstrap-dist/css/bootstrap.min.css" rel="stylesheet">
+<style type="text/css" title="currentStyle">
+@import "DataTables/css/main.css";
+@import "DataTables/css/tables.css";
+@import "media/css/TableTools.css";
+</style>
+<style type="text/css">
+    html, body
+    {
+        overflow: auto;
+    }
+    body
+        {
+            padding: 2;
+            margin: 10;
+        }
+    #mask
+    {
+        position:absolute;
+        z-index:9000;
+        background-color:#ccc;
+        display:none;
+    }
+    #window {
+        position:absolute;
+        left:0;
+        top:0;
+        background-color: #FFF;
+        width:230px;
+        height:90px;
+        display:none;
+        z-index:9999;
+        padding:20px;
+    }
+     div#presentgroup th{
+  border: 1px solid #00bfff;
+}
+div#presentgroup td{
+  border: 1px solid #00bfff;
+ max-width: 250px;
+ word-wrap: break-word;
+}
+</style>
+<script type="text/javascript" charset="utf-8">
+jQuery.fn.dataTableExt.oSort['allnumeric-asc']  = function(a,b) {
+          var x = parseFloat(a);
+          var y = parseFloat(b);
+          return ((x < y) ? -1 : ((x > y) ?  1 : 0));
+        };
+jQuery.fn.dataTableExt.oSort['allnumeric-desc']  = function(a,b) {
+          var x = parseFloat(a);
+          var y = parseFloat(b);
+          return ((x < y) ? 1 : ((x > y) ?  -1 : 0));
+        };
+</script>
+<script type="text/javascript">
+$(function(){
+                var _showTab = 0;
+                var $defaultLi = $('ul.tabs li').eq(_showTab).addClass('active');
+                $($defaultLi.find('a').attr('href')).siblings().hide();
+                $('ul.tabs li').click(function() {
+                        var $this = $(this),
+                        _clickTab = $this.find('a').attr('href');
+                        $this.addClass('active').siblings('.active').removeClass('active');
+                        $(_clickTab).stop(false, true).fadeIn().siblings().hide();
+                        $('#tablecontent').html('');
+                        $("#blastresult").html('');
+                        $("#blastcontent").show();
+                        clean_file();
+                        clean_data();
+                        clean_fchange();
+                        clean_cluster();
+                        clean_genelist();
+                        return false;
+                }).find('a').focus(function(){
+                        this.blur();
+                });
+});
+</script>
+<script type="text/javascript">
+function showissues(){
+ $.ajax({
+         url:"ftwissues.html",
+         cache: false,
+         dataType:'html',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            $("#tabs").html(msg);
+         }
+     });
+}
+
+function showstat(){
+ $.ajax({
+         url:"stat1.html",
+         cache: false,
+         dataType:'html',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            $("#a_tab").html(msg);
+  $("#tablecontent").html("");
+         }
+     });
+}
+
+function showhelp(){
+ $.ajax({
+         url:"help.html",
+         cache: false,
+         dataType:'html',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            $("#a_tab").html(msg);
+  $("#tablecontent").html("");
+         }
+     });
+}
+function showabout(){
+ $.ajax({
+         url:"about.php",
+         cache: false,
+         dataType:'html',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            $("#a_tab").html(msg);
+  $("#tablecontent").html("");
+         }
+     });
+}
+function showclusterkegg(up,down,p){
+    $.ajax({
+         url: 'gen_json.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         data: {up:up,down:down,p:p},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            var win=window.open('about:blank');
+            with(win.document){
+                open();
+                write(msg);
+                close();
+            }
+         }
+     });
+    return false;
+}
+function showkegg(fpkm,p){
+    $.ajax({
+         url: 'gen_json.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         data: {fpkm:fpkm,p:p},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            var win=window.open('about:blank');
+            with(win.document){
+                open();
+                write(msg);
+                close();
+            }
+         }
+     });
+    return false;
+}
+function showbrite(){
+        $.ajax({
+         url: 'hier/brite.html',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           $("#keggcontent").html(msg);
+         }
+     });
+  $("#tablecontent").html("");
+}
+function contigfileUpload(){
+      var currenttime=new Date().valueOf();
+      if (document.getElementById("contigUpload").value!=""){
+        $.ajaxFileUpload({
+          url:'searchc40.php',
+          secureuri:false,
+          fileElementId:'contigUpload',
+          dataType: 'json',
+          data:{ctime:currenttime},
+          success: function (data, status)
+          {
+                if(typeof(data.error) != 'undefined')
+                {
+                        if(data.error != '')
+                        {
+                            alert(data.error);
+                        }else{
+                            document.getElementById("contiguploadtxt").innerHTML="uploadfile:"+currenttime+"  done!";
+                            count_dddfromfiles();
+                        }
+                }
+          },
+          error: function (data, status, e)
+          {
+                alert(e);
+          }
+        });
+        $.ajax({
+         url: 'filepick.php',
+         cache: false,
+         dataType: 'html',
+             type:'POST',
+         data: {filename:currenttime},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            document.getElementById("contiguploadlist").innerHTML=msg;
+         }
+         });
+      }else{
+         if (document.getElementById("contigid").value!=""){
+              $.ajax({
+              url: 'searchc401.php',
+              cache: false,
+              dataType: 'html',
+              type:'POST',
+              data: {ctime:currenttime,id:$('#contigid').val()},
+              beforeSend:function(){
+                  showmask();
+              },
+              error: function(xhr) {
+                  alert('Ajax request error!');
+              },
+              success: function(msg){
+                  document.getElementById("contiguploadtxt").innerHTML="Save to file:"+currenttime+"  done!";
+                  count_dddfromfiles();
+              },
+              complete:function(){
+                  hidemask();
+              }
+            });
+         }
+      }
+      return false;
+}
+function ajaxFileUpload(){
+    var currenttime=new Date().valueOf();
+var db="0";
+db=document.getElementById("db").value;
+    var pro="0";
+    if (document.getElementById("program").value=="blastn"){
+            pro="1";
+    }else if(document.getElementById("program").value=="megablast"){
+            pro="2";
+    }else if(document.getElementById("program").value=="tblastx"){
+            pro="3";
+    }else if(document.getElementById("program").value=="tblastn"){
+            pro="4";
+    }else if(document.getElementById("program").value=="blastp"){
+            pro="5";
+    }
+    if (document.getElementById("sequence").value.length>0 || document.getElementById("blastfileUpload").value!=""){
+      if (document.getElementById("blastfileUpload").value!=""){
+        $.ajaxFileUpload({
+          url:'uploadblastfile.php',
+         type:'POST',
+          secureuri:false,
+          fileElementId:'blastfileUpload',
+          dataType: 'json',
+          data:{program: $('#program').val(),ctime:currenttime,db:db},
+          success: function (data, status){
+                if(typeof(data.error) != 'undefined')
+                {
+                        if(data.error != '')
+                        {
+                            alert(data.error);
+                        }else{
+                         document.getElementById("uploadfiletxt").innerHTML="<a href=\"download.php?id="+pro+".in."+currenttime+"\">download</a>";
+                     }
+                }
+          },
+          error: function (data, status, e)
+          {
+                alert(e);
+          }
+        });
+      }
+       $.ajax({
+         url: 'blast1.php',
+         cache: false,
+         dataType: 'html',
+             type:'POST',
+         data: { program: $('#program').val(),db:db,note: $('#note').val(),sequence: $('#sequence').val(),max_target: $('#max_target').val(),e_value: $('#e_value').val(),match_penalty: $('#match_penalty').val(),gap_creation: $('#gap_creation').val(),word_size: $('#word_size').val(),filter: $(':checked#blastfilter').val(),ctime:currenttime},
+         beforeSend:function(){
+             showmask();
+         },
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           $("#blastcontent").hide();
+           $("#blastresult").html(msg);
+      $.ajax({
+         url: 'blast2.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         data: { program: $('#program').val(),db: db,note: $('#note').val(),sequence: $('#sequence').val(),max_target: $('#max_target').val(),e_value: $('#e_value').val(),match_penalty: $('#match_penalty').val(),gap_creation: $('#gap_creation').val(),word_size: $('#word_size').val(),filter: $(':checked#blastfilter').val(),ctime:currenttime},
+         beforeSend:function(){
+             showmask();
+         },
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+                $.ajax({
+         url: 'blast4.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         data: { id:pro+".out."+currenttime},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           if(msg==0 || msg==-1){
+              document.getElementById("resultfiletxt").innerHTML="faild! <a href=\"download.php?id="+pro+"."+currenttime+".err\">error</a>";
+              document.getElementById("resultfilecsv").innerHTML="-";
+              $("#tablecontent").html('<font color="red">Error! No data!</font>');
+           }else{
+           document.getElementById("resultfiletxt").innerHTML="  <a href=\"download.php?id="+pro+".out."+currenttime+"\">download</a>";
+           document.getElementById("resultfilecsv").innerHTML="<a href=\"download.php?id="+pro+".out."+currenttime+".csv\">download</a>";
+           var line="<p align=\"center\">Show Hits per Sequences by Rank <select id=\"srank\" onchange=\"view('"+pro+"."+currenttime+"');\"><option value=\"1\"> Top 1 </option><option value=\"2\"> Top 2 </option><option value=\"3\"> Top 3 </option><option value=\"4\"> Top 4 </option><option value=\"5\"> Top 5 </option><option value=\"6\"> Top 6 </option><option value=\"7\"> Top 7 </option><option value=\"8\"> Top 8 </option><option value=\"9\"> Top 9 </option><option value=\"10\" > Top 10 </option><option value=\"0\" selected> All </option></select></p>";
+           $("#tablecontent").html(line+"<table id=\"blasttable\" width=100% class=\"display\"><thead><tr><th>Seq</th><th>Rank</th><th>Hits</th><th>Annotation</th><th>Length</th><th>Score</th><th>Bits</th><th>E-value</th><th>Identities</th><th>Strand</th><th>Start</th><th>End</th></tr></thead><tbody></tbody></table>");
+           var srank=document.getElementById("srank").value;
+           $("#blasttable").dataTable({
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "blast5.php",
+              "fnServerParams": function ( aoData ) {
+                  aoData.push({ "name": "id", "value": pro+"."+currenttime} );
+                  aoData.push({ "name": "pro", "value": pro} );
+                  aoData.push({ "name": "rank", "value": $('#srank').val()} );
+              },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],"aaSorting": [[ 1, "asc" ]]
+           });
+           }
+         },
+         complete:function(){
+           hidemask();
+         }
+       });
+         },
+         complete:function(){
+                hidemask();
+         }
+       });
+           hidemask();
+         }
+      });
+    }
+    return false;
+}
+function view(id){
+   var srank=document.getElementById("srank").value;
+   var line="<p align=\"center\" >Show Hits per Sequences by Rank <select name=srank id=\"srank\" onchange=\"view('"+id+"');\">";
+   for(i=1;i<11;i++){
+      if (srank==i){
+          line=line+"<option value=\""+i+"\" selected> Top "+i+" </option>";
+      }else{
+          line=line+"<option value=\""+i+"\"> Top "+i+" </option>";
+      }
+   }
+   if (srank==0){
+       line=line+"<option value=\"0\" selected> All </option>";
+   }else{
+       line=line+"<option value=\"0\"> All </option>";
+   }
+   line=line+"</select></p>";
+   var title="<thead><tr><th>Seq</th><th>Rank</th><th>Hits</th><th>Annotation</th><th>Length</th><th>Score</th><th>Bits</th><th>E-value</th><th>Identities</th><th>Strand</th><th>Start</th><th>End</th></tr></thead>";
+   $("#tablecontent").html(line+"<table id=\"blasttable\" width=100% class=\"display\">"+title+"<tbody></tbody></table>");
+   $("#blasttable").dataTable({
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "blast5.php",
+              "fnServerParams": function ( aoData ) {
+                              aoData.push( { "name": "id", "value": id} );
+                              aoData.push( { "name": "rank", "value": srank} );
+              },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],"aaSorting": [[ 1, "asc" ]]
+    });
+    hidemask();
+return false;
+}
+function changeOption(){
+         document.getElementById("sequence").value="";
+   if (document.getElementById("program").value=="blastn"){
+        document.getElementById('match_penaltykey').innerHTML='Match/Mismatch penalty :';
+        document.getElementById('match_penaltyvalue').innerHTML='<select name="match_penalty" id="match_penalty"><option value="1,-2"> 1, -2 </option><option value="1,-3"> 1, -3 </option><option value="1,-4"> 1, -4 </option><option value="2,-3" selected="selected"> 2, -3 </option><option value="4,-5"> 4, -5 </option><option value="1,-1"> 1, -1 </option></select> <a href="./help.html#penalty" target="_blank"><img src="./qmark.gif" border="0" /></a>';
+        var seldb=document.getElementById("db");
+          if (seldb.value==2){
+        seldb.options.length=0;
+        seldb.options[0]=new Option("Taiwana CDS Sequence", "1", true, true);
+        seldb.options[1]=new Option("Taiwana Genome Sequence", "3", false, true);
+        seldb.selectedIndex = 0;
+      }
+        var sel=document.getElementById("gap_creation");
+        sel.options.length=0;
+        sel.options[0]=new Option("Linear", "99", true, true);
+        sel.options[1]=new Option("Existence: 4   Extension: 4", "4,4", false, true);
+        sel.options[2]=new Option("Existence: 2   Extension: 4", "2,4", false, true);
+         sel.options[3]=new Option("Existence: 0   Extension: 4", "0,4", false, true);
+        sel.options[4]=new Option("Existence: 3   Extension: 3", "3,3", false, true);
+         sel.options[5]=new Option("Existence: 6   Extension: 2", "6,2", false, true);
+        sel.options[6]=new Option("Existence: 5   Extension: 2", "5,2", false, true);
+         sel.options[7]=new Option("Existence: 4   Extension: 2", "4,2", false, true);
+        sel.options[8]=new Option("Existence: 2   Extension: 2", "2,2", false, true);
+        sel.selectedIndex = 0;
+        document.getElementById("word_size").value="11";
+        document.getElementById("blastfilter").checked=false;
+   }else if(document.getElementById("program").value=="megablast"){
+        document.getElementById('match_penaltykey').innerHTML='Match/Mismatch penalty :';
+        document.getElementById('match_penaltyvalue').innerHTML='<select name="match_penalty" id="match_penalty"><option value="1,-2" selected="selected"> 1, -2 </option><option value="1,-3"> 1, -3 </option><option value="1,-4"> 1, -4 </option><option value="2,-3"> 2, -3 </option><option value="4,-5"> 4, -5 </option><option value="1,-1"> 1, -1 </option></select> <a href="./help.html#penalty" target="_blank"><img src="./qmark.gif" border="0" /></a>';
+        var seldb=document.getElementById("db");
+      if (seldb.value==2){
+        seldb.options.length=0;
+        seldb.options[0]=new Option("Taiwana CDS Sequence", "1", true, true);
+        seldb.options[1]=new Option("Taiwana Genome Sequence", "3", false, true);
+        seldb.selectedIndex = 0;
+      }
+        var sel=document.getElementById("gap_creation");
+        sel.options.length=0;
+        sel.options[0]=new Option("Linear", "99", true, true);
+        sel.options[1]=new Option("Existence: 5   Extension: 2", "5,2", false, true);
+        sel.options[2]=new Option("Existence: 2   Extension: 2", "2,2", false, true);
+        sel.options[3]=new Option("Existence: 1   Extension: 2", "1,2", false, true);
+        sel.options[4]=new Option("Existence: 0   Extension: 2", "0,2", false, true);
+        sel.options[5]=new Option("Existence: 3   Extension: 1", "3,1", false, true);
+        sel.options[6]=new Option("Existence: 2   Extension: 1", "2,1", false, true);
+        sel.options[7]=new Option("Existence: 1   Extension: 1", "1,1", false, true);
+        sel.selectedIndex = 0;
+        document.getElementById("word_size").value="28";
+        document.getElementById("blastfilter").checked=false;
+   }else if(document.getElementById("program").value=="tblastx"){
+        document.getElementById('match_penaltykey').innerHTML='Matrix:';
+        document.getElementById('match_penaltyvalue').innerHTML='<select name="match_penalty" id="match_penalty"><option value="pam30"> PAM30 </option><option value="pam70"> PAM70 </option><option value="blosum80"> BLOSUM80 </option><option value="blosum62" selected="selected"> BLOSUM62 </option><option value="blosum45"> BLOSUM45 </option></select> <a href="./help.html#matrix" target="_blank"><img src="./qmark.gif" border="0" /></a>';
+        var seldb=document.getElementById("db");
+      if (seldb.value==2){
+        seldb.options.length=0;
+        seldb.options[0]=new Option("Taiwana CDS Sequence", "1", true, true);
+        seldb.options[1]=new Option("Taiwana Genome Sequence", "3", false, true);
+        seldb.selectedIndex = 0;
+      }
+        var sel=document.getElementById("gap_creation");
+        sel.options.length=0;
+        sel.options[0]=new Option("Existence: 9   Extension: 2", "9,2", true, true);
+        sel.options[1]=new Option("Existence: 8   Extension: 2", "8,2", false, true);
+        sel.options[2]=new Option("Existence: 7   Extension: 2", "7,2", false, true);
+        sel.options[3]=new Option("Existence: 12   Extension: 1", "12,1", false, true);
+        sel.options[4]=new Option("Existence: 11   Extension: 1", "11,1", false, true);
+         sel.options[5]=new Option("Existence: 10   Extension: 1", "10,1", false, true);
+        sel.selectedIndex = 4;
+        document.getElementById("word_size").value="3";
+        document.getElementById("blastfilter").checked=true;
+   }else if(document.getElementById("program").value=="tblastn" || document.getElementById("program").value=="blastp"){
+        var seldb=document.getElementById("db");
+        if(document.getElementById("program").value=="tblastn"){
+             if (seldb.value==2){
+            seldb.options.length=0;
+        seldb.options[0]=new Option("Taiwana CDS Sequence", "1", true, true);
+        seldb.options[1]=new Option("Taiwana Genome Sequence", "3", false, true);
+            seldb.selectedIndex = 0;
+             }
+        }else{
+                if (seldb.value!=2){
+            seldb.options.length=0;
+            seldb.options[0]=new Option("Taiwana Proteins Sequence", "2", true, true);
+            seldb.selectedIndex = 0;
+                            }
+        }
+        document.getElementById('match_penaltykey').innerHTML='Matrix:';
+        document.getElementById('match_penaltyvalue').innerHTML='<select name="match_penalty" id="match_penalty"><option value="pam30"> PAM30 </option><option value="pam70"> PAM70 </option><option value="blosum80"> BLOSUM80 </option><option value="blosum62" selected="selected"> BLOSUM62 </option><option value="blosum45"> BLOSUM45 </option></select> <a href="./help.html#matrix" target="_blank"><img src="./qmark.gif" border="0" /></a>';
+        var sel=document.getElementById("gap_creation");
+        sel.options.length=0;
+        sel.options[0]=new Option("Existence: 9   Extension: 2", "9,2", true, true);
+        sel.options[1]=new Option("Existence: 8   Extension: 2", "8,2", false, true);
+        sel.options[2]=new Option("Existence: 7   Extension: 2", "7,2", false, true);
+        sel.options[3]=new Option("Existence: 12   Extension: 1", "12,1", false, true);
+        sel.options[4]=new Option("Existence: 11   Extension: 1", "11,1", false, true);
+         sel.options[5]=new Option("Existence: 10   Extension: 1", "10,1", false, true);
+        sel.selectedIndex = 4;
+        document.getElementById("word_size").value="3";
+        document.getElementById("blastfilter").checked=false;
+   }
+   return false;
+}
+function fillcontigexample(){
+   document.getElementById("contigid").value="FTW2_10046.t1\nFTW2_9999.t1\nFTW2_5016.t1\nFTW2_574.t1\nFTW2_2643.t1\nFTW2_6549.t1";
+   return false;
+}
+function fillexample(){
+   if(document.getElementById("program").value=="tblastn" || document.getElementById("program").value=="blastp"){
+       document.getElementById("sequence").value=">your sequence name\nMKVVIVLAALVAVALARPQQLDDSANAQITRYESDNIGIDGYRFAYATSDGVNREEEAVLKNAGTENEAMEVRGSYSYIGPDGVTYTIRFLANEDGFQPEGDHIPKAL*\n";
+   }else{
+       document.getElementById("sequence").value=">your sequence name\nCATAGAGTCTAGACATAGAGGCTCATCAACTCGAAATCGGCTCACCCGAGCCATCAACTT\nTCCATGAGTCTGCTGTCAATTTGGATTATTAGAAAATATCAACAATTTCTGAAATGGCCG\nAATACGGCCTCCCAGACCTGAGAAACCTGCCGGAAGTGGCAGAAAAGGCTCTAGAGGACC\nAGGGAACCTCCCTCAGAAACAGGGTGAGTGCTCACTTTGAGGCTTCTGGAGGTCGGAAGG\nAGCCTCAAGGAAGGAGAAAAACCAAAAAAGGAAGCCAGGAGAACCAGCAGAAGCCAATTT\nTGGAGCCTAGGAAGGAGCTGTAG\n";
+   }
+   return false;
+}
+var iframe ;
+TableTools.BUTTONS.download = {
+    "sAction": "text",
+    "sTag": "default",
+    "sFieldBoundary": "",
+    "sFieldSeperator": "\t",
+    "sNewLine": "<br>",
+    "sToolTip": "",
+    "sButtonClass": "DTTT_button_text",
+    "sButtonClassHover": "DTTT_button_text_hover",
+    "sButtonText": "Download",
+    "mColumns": "all",
+    "bHeader": true,
+    "bFooter": true,
+    "sDiv": "",
+    "fnMouseover": null,
+    "fnMouseout": null,
+    "fnClick": function( nButton, oConfig ) {
+      var oParams = this.s.dt.oApi._fnAjaxParameters( this.s.dt );
+      if (document.getElementById("poola")!=null){
+          var aoGet = [ { "name": "num", "value": $('#number2').val()},{ "name": "symbol", "value": $('#number1').val()},{ "name": "num2", "value": $('#number4').val()},{ "name": "symbol2", "value": $('#number3').val()},{ "name": "num3", "value": $('#number6').val()},{ "name": "symbol3", "value": $('#number5').val()},{ "name": "num4", "value": $('#number8').val()},{ "name": "symbol4", "value": $('#number7').val()},{ "name": "group", "value": $('#log').val()},{ "name": "id1", "value": document.getElementById("poola").innerHTML },{ "name": "id2", "value": document.getElementById("poolb").innerHTML } ];
+      }else{
+         if(document.getElementById("clustergo")!=null){
+            var fullfilename='';
+                $("input[name='pics[]' ]:checked").each(function(){
+                        fullfilename=fullfilename+$(this).val()+",";
+                });
+            var aoGet = [{ "name": "filename", "value": fullfilename}];
+         }else if (document.getElementById("contiguploadtxt").innerHTML.split(":").length>1){
+            var currenttime=document.getElementById("contiguploadtxt").innerHTML.split(":")[1].replace("done!","");
+            var aoGet = [ { "name": "filename", "value": currenttime },{ "name": "module", "value": "1" }];
+         }else if (document.getElementById("genelisttable")!=null){
+                        var line="";
+            $('input[name="s1[]"]:checked').each(function(){
+              if (j==0){
+                 line=$(this).val();
+              }else{
+                line=line+" "+$(this).val();
+              }
+              j=j+1;
+            });
+              var currenttime="";
+              var j=0;
+              $("input[name='glist[]' ]:checked").each(function(){
+              if (j==0){
+                        currenttime=$(this).val();
+                        }else{
+                        currenttime=currenttime+","+$(this).val();
+                     }
+                        j=j+1;
+              });
+               var aoGet = [ { "name": "filename", "value": currenttime },{ "name": "module", "value": "2" },{ "name": "selectedid", "value": line}];
+          }else{
+                        var line="";
+            $('input[name="s1[]"]:checked').each(function(){
+              if (j==0){
+                 line=$(this).val();
+              }else{
+                line=line+" "+$(this).val();
+              }
+              j=j+1;
+            });
+              var aoGet = [{ "name": "searchname", "value": $('#searchname').val()},{ "name": "signalp", "value": document.getElementById("signalp").checked},{ "name": "tmhmm", "value": document.getElementById("tmhmm").checked},{ "name": "blastx", "value": document.getElementById("sblastx").checked},{ "name": "kegg", "value": document.getElementById("skegg").checked},{ "name": "go", "value": document.getElementById("sgo").checked},{ "name": "pfam", "value": document.getElementById("spfam").checked},{ "name": "selectedid", "value": line}];
+          }
+      }
+      var sUrlAddition = '';
+        for ( var i=0 ; i<aoGet.length ; i++ ){
+            sUrlAddition += aoGet[i].name+'='+aoGet[i].value+'&';
+        }
+    iframe= document.createElement('iframe');
+    iframe.style.height = "0px";
+    iframe.style.width = "0px";
+    iframe.src = oConfig.sUrl+"?"+sUrlAddition+$.param(oParams);
+    document.body.appendChild( iframe );
+    },
+    "fnSelect": null,
+    "fnComplete":function(){ },
+    "fnInit": null
+};
+function search(){
+   var title="<form><input type=\"checkbox\" id=\"checkallid\" onclick=\"searchselectall();\">select All";
+    title=title+"<table id=\"searchtable\" width=100% class=\"display\"><thead><tr><th>  transcriptid</th><th>linkagegroup</th>";
+  var issignalp=false;
+  if (document.getElementById("signalp").checked){
+      issignalp=true;
+      title=title+"<th>SignalP</th>";
+   }
+    var istmhmm=false;
+  if (document.getElementById("tmhmm").checked){
+      istmhmm=true;
+      title=title+"<th>tmHMM</th>";
+   }
+   var isblastx=false;
+   if (document.getElementById("sblastx").checked){
+      isblastx=true;
+      title=title+"<th>description</th><th>species</th>";
+   }
+   var iskegg=false;
+   if (document.getElementById("skegg").checked){
+      iskegg=true;
+      title=title+"<th>KEGG</th>";
+   }
+   var isgo=false;
+   if (document.getElementById("sgo").checked){
+      isgo=true;
+      title=title+"<th>GO</th>";
+   }
+   var ispfam=false;
+   if (document.getElementById("spfam").checked){
+      ispfam=true;
+      title=title+"<th>pFAM</th>";
+   }
+   title=title+"</tr></thead><tbody></tbody></table></form>";
+   var skey=document.getElementById("searchname").value;
+   if(!isblastx && !iskegg && !isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search1.php" ,
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, 500,1000,10000,50000], [10, 25, 50,100, 500,1000,10000,50000]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"} ]
+                }
+      });
+   }else if(!isblastx && !iskegg && !isgo && ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search2.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(!isblastx && !iskegg && isgo && ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search3.php",
+                                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(!isblastx && !iskegg && isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search4.php",
+                                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(!isblastx && iskegg && !isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search5.php",
+                                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(!isblastx && iskegg && !isgo && ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search6.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(!isblastx && iskegg && isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search7.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(!isblastx && iskegg && isgo && ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search8.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(isblastx && !iskegg && !isgo && ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search9.php",
+                 "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(isblastx && !iskegg && !isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search10.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                  aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if(isblastx && !iskegg && isgo && ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search11.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if (isblastx && !iskegg && isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search12.php",
+                 "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if (isblastx && iskegg && !isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search13.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                  aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if (isblastx && iskegg && !isgo && ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search14.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                  aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else if (isblastx && iskegg && isgo && !ispfam){
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search15.php",
+                 "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                 aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }else{
+      $("#tablecontent").html(title);
+      $('#searchtable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "search16.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "searchname", "value": $('#searchname').val() } );
+                                   aoData.push(    { "name": "signalp", "value": issignalp } );
+                                aoData.push( { "name": "tmhmm", "value": istmhmm } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',"buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [
+                {"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"downloadfasta.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelists.php"}]
+                }
+            });
+   }
+return false;
+}
+</script>
+<script type="text/javascript">
+$(document).ready(function () {
+    $('#searchname').keypress(function(e){
+     if(e.which==13){
+         search();
+         return false;
+     }
+  });
+  $('#clean').click(function(){
+        $('#tablecontent').html("");
+  });
+ $('#clean1').click(function(){
+       clean_file();
+  });
+});
+</script>
+<script language="JavaScript" type="text/javascript">
+function showblastresult(){
+      $.ajax({
+         url: 'blast3.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           $("#blastcontent").hide();
+           $("#blastresult").html(msg);
+           $('#blastfile').dataTable({"aLengthMenu": [[1,5, 10,20, -1], [1,5, 10,20, "All"]],"iDisplayLength":5,"aaSorting": [[ 0, "desc" ]]});
+         }
+     });
+}
+function showclusterresult() {
+     $.ajax({
+         url: 'clustering3.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           $("#clustercontent").hide();
+           $("#clusterresult").html(msg);
+          $('#clusterfile').dataTable({"aLengthMenu": [[1,5, 10,20, -1], [1,5, 10,20, "All"]],"iDisplayLength":5,"aaSorting": [[ 0, "desc" ]]});
+         }
+     });
+}
+function goto_contig(id) {
+    xmlhttp=GetXmlHttpObject();
+    if (xmlhttp==null) {
+        alert ("Your browser does not support AJAX!");
+        return;
+    }
+    var url="detail.php";
+    url=url+"?id="+id;
+    xmlhttp.onreadystatechange=function() {
+        if (xmlhttp.readyState==4 || xmlhttp.readyState=="complete") {
+            document.getElementById('tablecontent').innerHTML=xmlhttp.responseText;
+        }
+    }
+    params="id="+id;
+    xmlhttp.open("POST", url, true);
+    xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlhttp.setRequestHeader("Content-length", params.length);
+    xmlhttp.setRequestHeader("Connection", "close");
+    xmlhttp.send(params);
+}
+function showgo(goid,contiglist){
+    $.ajax({
+         url: 'contig_lists.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         data: {goid:goid,contiglist:contiglist},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+                var win=window.open();
+                newdocument=win.document;
+                newdocument.write(msg);
+                newdocument.close();
+         }
+     });
+    return false;
+}
+function showgenelist(){
+    $.ajax({
+         url: 'genelist.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+          $("#tablecontent").html('');
+           $("#genelistcontent").html(msg);
+          $('#genelisttable').dataTable({"aLengthMenu": [[1,5, 10,20, -1], [1,5, 10,20, "All"]],"iDisplayLength":5,"aaSorting": [[ 4, "desc" ]]});
+         }
+     });
+    return false;
+}
+function showlibrary(){
+    $.ajax({
+         url: 'library1.php',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           $("#librarycontent").html(msg);
+          $('#count_ddd').hide();
+         }
+     });
+    return false;
+}
+function showpathway(){
+    $.ajax({
+         url: 'hier/kegg.html',
+         cache: false,
+         dataType:'html',
+             type:'POST',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           $("#keggcontent").html(msg);
+           $('#hiertable').dataTable();
+         }
+     });
+     $.ajax({
+         url: 'kegg1.php',
+         cache: false,
+         dataType:'JSON',
+             type:'POST',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(data){
+           $("#tablecontent").html('<table border="0" class="display" id="pathwaytable" width="100%"><thead><tr><th>Pathway name</th><th>frequency </th></thead><tbody></tbody></table>');
+                  $('#pathwaytable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "kegg1.php",
+                "aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]]
+            });
+         }
+     });
+    return false;
+}
+function goto_contig(id) {
+    xmlhttp=GetXmlHttpObject();
+    if (xmlhttp==null) {
+        alert ("Your browser does not support AJAX!");
+        return;
+    }
+    var url="detail.php";
+    url=url+"?id="+id;
+    xmlhttp.onreadystatechange=function() {
+        if (xmlhttp.readyState==4 || xmlhttp.readyState=="complete") {
+            document.getElementById('tablecontent').innerHTML=xmlhttp.responseText;
+        }
+    }
+    params="id="+id;
+    xmlhttp.open("POST", url, true);
+    xmlhttp.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xmlhttp.setRequestHeader("Content-length", params.length);
+    xmlhttp.setRequestHeader("Connection", "close");
+    xmlhttp.send(params);
+}
+function GetXmlHttpObject() {
+    var xmlhttp=null;
+    try {
+        // Firefox, Opera 8.0+, Safari
+        xmlhttp=new XMLHttpRequest();
+    }
+    catch (e) {
+        // Internet Explorer
+        try {
+            xmlhttp=new ActiveXObject("Msxml2.XMLHTTP");
+        }
+        catch (e) {
+            xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+    }
+    return xmlhttp;
+}
+</script>
+<script>
+function clean_data(){
+    document.getElementById("searchname").value=null;
+    document.getElementById("sblastx").checked=true;
+    document.getElementById("skegg").checked=false;
+    document.getElementById("sgo").checked=false;
+    document.getElementById("spfam").checked=false;
+}
+function clean_genelist(){
+    document.getElementById("genelistcontent").innerHTML="";
+}
+function clean_file(){
+    document.getElementById("contiguploadtxt").innerHTML="";
+    document.getElementById("contiguploadlist").innerHTML="";
+    document.getElementById("contigUpload").value=null;
+    document.getElementById("contigid").value=null;
+    document.getElementById("fcontiglist").checked=true;
+}
+function clean_fchange(){
+    $('#librarycontent').html("");
+    $('#count_ddd').hide();
+    document.getElementById("itotal").innerHTML='';
+    $('#tablecontent').html("");
+    document.getElementById("number2").value="1";
+    document.getElementById("number4").value="";
+    document.getElementById("number6").value="";
+    document.getElementById("number8").value="1";
+    var log=document.getElementById("log");
+    log.options.length=0;
+    log.options[0]=new Option("All", "1", true, true);
+    log.options[1]=new Option("PoolA > PoolB", "2", false, true);
+    log.options[2]=new Option("PoolA < PoolB", "3", false, true);
+    log.options[3]=new Option("PoolA = PoolB", "4", false, true);
+    log.selectedIndex = 0;
+    var pvalue=document.getElementById("pvalue");
+    pvalue.options.length=0;
+    pvalue.options[0]=new Option("0.1", "0.1", true, true);
+    pvalue.options[1]=new Option("0.01", "0.01", false, true);
+    pvalue.options[2]=new Option("0.001", "0.001", false, true);
+    pvalue.options[3]=new Option("0.0001", "0.0001", false, true);
+    pvalue.selectedIndex = 0;
+}
+function clean_fchange1(){
+    document.getElementById("itotal").innerHTML='';
+    $('#tablecontent').html("");
+    document.getElementById("number2").value="1";
+    document.getElementById("number4").value="";
+    document.getElementById("number6").value="";
+    document.getElementById("number8").value="";
+$("#number4").Watermark("1");
+$("#number6").Watermark("1");
+$("#number8").Watermark("1");
+    var log=document.getElementById("log");
+    log.options.length=0;
+    log.options[0]=new Option("All", "1", true, true);
+    log.options[1]=new Option("PoolA > PoolB", "2", false, true);
+    log.options[2]=new Option("PoolA < PoolB", "3", false, true);
+    log.options[3]=new Option("PoolA = PoolB", "4", false, true);
+    log.selectedIndex = 0;
+    var pvalue=document.getElementById("pvalue");
+    pvalue.options.length=0;
+    pvalue.options[0]=new Option("0.1", "0.1", true, true);
+    pvalue.options[1]=new Option("0.01", "0.01", false, true);
+    pvalue.options[2]=new Option("0.001", "0.001", false, true);
+    pvalue.options[3]=new Option("0.0001", "0.0001", false, true);
+    pvalue.selectedIndex = 0;
+}
+function clean_cluster(){
+    $("#clustercontent").show();
+    $('#clusterresult').html("");
+    $('#clusterresult2').html("");
+            cleangroup();
+}
+function clean_pool(){
+     $("input[name='c1[]' ]").each(function(){
+        $(this).attr('checked',false);
+        $(this).attr('disabled',false);
+    });
+    var table = document.getElementById("pool");
+    var i= 1;
+    while (i < table.rows.length) {
+        var row = table.rows[i];
+        table.deleteRow(i);
+    }
+    $('#count_ddd').hide();
+    $('#tablecontent').html('');
+}
+function modify_pool(id){
+   var target=-1;
+   var table = document.getElementById("pool");
+   var i= table.rows.length;
+   for (var index=1;index<i;index++){
+     if (table.rows[index].cells[3].innerHTML.indexOf(id)>0){
+         target=index;
+     }
+   }
+   if (target>=-1){
+     var line="";
+     var lined="";
+     for (var index=1;index<i;index++){
+       if (index!=target){
+          data=table.rows[index].cells[1].innerHTML.split(">");
+           if (data.length>1){
+            line=data[1].toLowerCase().replace("</div","");
+           }
+        }else{
+         data=table.rows[index].cells[1].innerHTML.split(">");
+         if (data.length>1){
+           lined=data[1].toLowerCase().replace("</div","");
+          }
+       }
+     }
+     var names=line.split(",");
+     var mark=lined.split(",");
+     $("input[name='c1[]' ]").each(function(){
+            var value=$(this).val().toLowerCase();
+            if( jQuery.inArray( value, names)>-1){
+                $(this).attr('checked',false);
+                $(this).attr('disabled',true);
+            }else{
+                if (jQuery.inArray( value, mark)>-1){
+                  $(this).prop('disabled',false);
+                  $(this).prop("checked",true);
+                }else{
+                $(this).attr('checked',false);
+                $(this).attr('disabled',false);
+                  }
+            }
+      });
+   }
+return false;
+}
+function delete_pool(id){
+    var target=-1;
+    var table = document.getElementById("pool");
+    var i= table.rows.length;
+              for (var index=1;index<i;index++){
+             if (table.rows[index].cells[3].innerHTML.indexOf(id)>0){
+                 target=index;
+             }
+     }
+     if (target>=-1){
+        var r=confirm("Delete this data?\n\n"+table.rows[target].cells[0].innerHTML+"\n");
+        if (r==true){
+            table.deleteRow(target);
+        }
+    }
+    showpooldataset();
+}
+function showpooldataset(){
+   var table = document.getElementById("pool");
+   var i= table.rows.length;
+   if (i>1){
+     var line="";
+     var line1="";
+     for (var index=1;index<i;index++){
+       if (index==1){
+           data=table.rows[index].cells[1].innerHTML.split(">");
+           if (data.length>1){
+               line=data[1].toLowerCase().replace("</div","");
+           }
+        }else{
+           data=table.rows[index].cells[1].innerHTML.split(">");
+           if (data.length>1){
+               line1=data[1].toLowerCase().replace("</div","");
+            }
+           line=line+","+line1;
+       }
+     }
+     var names=line.split(",");
+     $("input[name='c1[]' ]").each(function(){
+            var value=$(this).val().toLowerCase();
+            if( jQuery.inArray( value, names)>-1){
+                $(this).attr('checked',false);
+                $(this).attr('disabled',true);
+            }else{
+                $(this).attr('checked',false);
+                $(this).attr('disabled',false);
+            }
+      });
+   }else{
+     $("input[name='c1[]' ]").each(function(){
+         $(this).attr('checked',false);
+         $(this).attr('disabled',false);
+     });
+   }
+return false;
+}
+function add_pool(){
+    $('#tablecontent').html('');
+    var t=$('input[name="operation"]:checked').val();
+   if (t!=null){
+       $('input[name="operation"]:checked').each(function(){
+          $(this).attr('checked',false);
+       });
+       var target=-1;
+       var table = document.getElementById("pool");
+       var i= table.rows.length;
+       for (var index=1;index<i;index++){
+            if (table.rows[index].cells[3].innerHTML.indexOf(t)>0){
+                 target=index;
+            }
+       }
+       if (target>=-1){
+                var line="";
+                var j=0;
+                $("input[name='c1[]' ]:checked").each(function(){
+                        if (j==0){
+                            line=$(this).val();
+                        }else{
+                            line=line+","+$(this).val();
+                        }
+                        j=j+1;
+                });
+                table.rows[target].cells[1].innerHTML="<div id=\""+t+"\">"+line+"</div>";
+       }
+   }else{
+        var table = document.getElementById("pool");
+        var i= table.rows.length;
+        if (i<3){
+            var line="";
+            var j=0;
+            $("input[name='c1[]' ]:checked").each(function(){
+              if (j==0){
+                 line=$(this).val();
+              }else{
+                line=line+","+$(this).val();
+              }
+              j=j+1;
+            });
+              var addpoolb=1;
+          if (i==2){
+           if (table.rows[1].cells[0].innerHTML.toLowerCase()=="pool b:"){
+                addpoolb=0;
+           }
+          }
+            if (i==1 || addpoolb==0){
+               if (line.trim()!="" ){
+               var table = document.getElementById("pool");
+               var k= table.rows.length;
+               var row = table.insertRow(k);
+               var cell1 = row.insertCell(0);
+               cell1.innerHTML="Pool A:";
+               var cell2 = row.insertCell(1);
+               cell2.innerHTML="<div id=\"poola\">"+line+"</div>";
+               var cell3 = row.insertCell(2);
+               cell3.innerHTML="<input type=\"radio\" name=\"operation\" value=\"poola\" onclick=\"modify_pool('poola');\">modify   &nbsp;&nbsp; ";
+               var cell4 = row.insertCell(3);
+               cell4.innerHTML="<input type=\"radio\" name=\"operation\" onclick=\"delete_pool('poola');\">delete   &nbsp;&nbsp;";
+               row.bgColor="#ff9999";
+               }else{
+                       alert("Must have at least one selected dataset.\n ");
+                }
+           }else{
+                if (line.trim()!="" ){
+               var table = document.getElementById("pool");
+               var k= table.rows.length;
+               var row = table.insertRow(k);
+               var cell1 = row.insertCell(0);
+               cell1.innerHTML="Pool B:";
+               var cell2 = row.insertCell(1);
+               cell2.innerHTML="<div id=\"poolb\">"+line+"</div>";
+               var cell3 = row.insertCell(2);
+               cell3.innerHTML="<input type=\"radio\" name=\"operation\" value=\"poolb\" onclick=\"modify_pool('poolb');\">modify   &nbsp;&nbsp; ";
+               var cell4 = row.insertCell(3);
+               cell4.innerHTML="<input type=\"radio\" name=\"operation\" onclick=\"delete_pool('poolb');\">delete   &nbsp;&nbsp;";
+               row.bgColor="#66ccff";
+               }else{
+                 alert("Must have 2 pool.\n Please use Add_to_List button to add selected dataset.");
+              }
+          }
+      }else{
+          alert("Error! Maximum Pool is 2 .");
+      }
+  }
+    showpooldataset();
+    return false;
+}
+function showFilter(){
+   var table = document.getElementById("pool");
+   var i= table.rows.length;
+   if(i==3){
+              $("#librarycontent1").html("");
+              $('#count_ddd').show();
+   }else{
+       alert("Must have 2 pool.\n Please use Add_to_List button to add selected dataset.");
+   }
+       return false;
+}
+function count_dddfromfiles(){
+    if (document.getElementById("contiguploadtxt").innerHTML.split(":").length>1){
+        currenttime=document.getElementById("contiguploadtxt").innerHTML.split(":")[1].replace("done!","");
+       if (document.getElementById("fkegg").checked){
+           showmask();
+          $.ajax({
+                url: 'kegg.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime},
+                error: function(xhr) {
+                  hidemask();
+                    alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablecontent').innerHTML=msg;
+                     $('#ktable').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],"aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2] },{ "sType": "allnumeric", "aTargets": [ 1] }],
+                    "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                              "buttons": ["csv"]
+                });
+               hidemask();
+                 }
+           });
+        }
+        if (document.getElementById("fgo").checked){
+           var pvalue=document.getElementById("fpvalue").value;
+           showmask();
+           document.getElementById('tablecontent').innerHTML="<div id=\"tablego1\"></div><div id=\"tablego2\"></div><div id=\"tablego3\"></div>";
+        $.ajax({
+                url: 'go1.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego1').innerHTML=msg;
+                    $('#gotable0').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                    "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                              "buttons": ["csv"]
+                         });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'go2.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego2').innerHTML=msg;
+                    $('#gotable1').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                    "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                              "buttons": ["csv"]
+                                 });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'go3.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego3').innerHTML=msg;
+                    $('#gotable2').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                    "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                              "buttons": ["csv"]
+                                 });
+                hidemask();
+            }
+        });
+        }//end go checked
+        if (document.getElementById("fcontiglist").checked){
+     showmask();
+           $.ajax({
+         url: 'header.php',
+         cache: false,
+         dataType:'html',
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           $("#tablecontent").html(msg);
+           $('#ctable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "filepickgenelist.php",
+"sServerMethod": "GET",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "filename", "value": currenttime } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',
+                              "buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [{"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"download.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download","sButtonText": "Save as genelist","sUrl":"savegenelist2.php"}]
+                }
+            });
+         }
+     });
+            hidemask();
+       }
+       if (document.getElementById("fheatmap").checked){
+            showmask();
+            $.ajax({
+               url: 'heatmaps.php',
+               cache: false,
+               dataType: 'JSON',
+               type:'POST',
+               data: { filename:currenttime},
+               error: function(xhr) {
+                 alert('Ajax request error!');
+               },
+               success: function(data){
+                 if (data["error"]!=""){
+                          alert(data["error"]);
+                 }else{
+                    var heatmap3;
+                    $("#tablecontent").html("<button id=\"btnsaveheatmap\" class=\"btn btn-default\">Save as genelist</button><br><div id=\"heatmap\" style='width:600;height:600'></div>");
+                    heatmap3=new heatmap($("#heatmap"));
+                    heatmap3.render(data);
+                    document.getElementById("btnsaveheatmap").onclick=function(){
+                      var hgname=heatmap3.get_sel_names();
+                      hgname=String(hgname);
+                      if (hgname.length!=0){
+                       var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+                       if (inputname.length!=0){
+                          alert("Your inputname is "+inputname+"\n\n");
+                           $.ajax({
+                               url: 'savegenelist11.php',
+                               cache: false,
+                               dataType: 'html',
+                               type:'GET',
+                               data: {genename:hgname,gname:inputname,title:3},
+                               error: function(xhr) {
+                                 alert('Ajax request error!');
+                               },
+                               success: function(msg){
+                                   alert("Save genelist done!\n"+"Please go to Gene List Analysis to view the result.");
+                                }
+                           });
+                        }else{
+                          alert("Error! Your inputname is empty!");
+                        }
+                      }else{
+                        alert("You select 0 genelist. \n Please click the heatmap picture to select the genelist! ");
+                      }
+                    };
+                 }
+               }
+          });
+          hidemask();
+       }
+        if (document.getElementById("fppichecked").checked){
+           var ppivalue=document.getElementById("fppivalue").value;
+        $.ajax({
+         url: 'ppicheck.php',
+         cache: false,
+         dataType: 'html',
+         type:'POST',
+         data: {filename:currenttime,pro:ppivalue},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+          var data=msg.split("\t")
+          if(data.length==2 && data[1].trim()!=""){
+             $("#tablecontent").html(msg+'<iframe name="ppiframe1" width="100%" height="1150px" frameboder="0" border="0" cellspacing="0"></iframe>');
+             document.getElementById("ppiform1").submit();
+          }else{
+                             $("#tablecontent").html(msg);
+          }
+         }
+         });
+            hidemask();
+        }
+    }
+    return false;
+}
+function savekeggBRITE(id){
+            var line="";
+            var j=0;
+            $('input[name="brite1[]"]:checked').each(function(){
+              if (j==0){
+                 line=$(this).val();
+              }else{
+                line=line+","+$(this).val();
+              }
+              j=j+1;
+            });
+    if (String(id)=="undefined"){id=line;}
+    var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+    if (inputname.length!=0){
+       alert("Your inputname is "+inputname+"\n\n");
+        $.ajax({
+               url: 'savegenelist4_1.php',
+               cache: false,
+               dataType: 'html',
+               type:'GET',
+               data: {kid:id,gname:inputname},
+               error: function(xhr) {
+                 alert('Ajax request error!');
+               },
+               success: function(msg){
+                   alert(msg);
+               }
+        });
+    }else{
+      alert("Error! Your inputname is empty!");
+    }
+    return false;
+}
+function savekegg(id){
+            var line="";
+            var j=0;
+            $('input[name="map1[]"]:checked').each(function(){
+              if (j==0){
+                 line=$(this).val();
+              }else{
+                line=line+" "+$(this).val();
+              }
+              j=j+1;
+            });
+    if (String(id)=="undefined"){id=line;}
+    var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+    if (inputname.length!=0){
+       alert("Your inputname is "+inputname+"\n\n");
+        $.ajax({
+               url: 'savegenelist4.php',
+               cache: false,
+               dataType: 'html',
+               type:'GET',
+               data: {p:id,gname:inputname},
+               error: function(xhr) {
+                 alert('Ajax request error!');
+               },
+               success: function(msg){
+                   alert(msg);
+               }
+        });
+    }else{
+      alert("Error! Your inputname is empty!");
+    }
+    return false;
+}
+function savekeggs(id){
+    var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+    if (inputname.length!=0){
+       alert("Your inputname is "+inputname+"\n\n");
+        $.ajax({
+               url: 'savegenelist4.php',
+               cache: false,
+               dataType: 'html',
+               type:'POST',
+               data: {contig:id,gname:inputname},
+               error: function(xhr) {
+                 alert('Ajax request error!');
+               },
+               success: function(msg){
+                   alert(msg);
+               }
+        });
+    }else{
+      alert("Error! Your inputname is empty!");
+    }
+    return false;
+}
+function savego(id){
+    var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+    if (inputname.length!=0){
+       alert("Your inputname is "+inputname+"\n\n");
+        $.ajax({
+               url: 'savegenelist5.php',
+               cache: false,
+               dataType: 'html',
+               type:'POST',
+               data: {contig:id,gname:inputname},
+               error: function(xhr) {
+                 alert('Ajax request error!');
+               },
+               success: function(msg){
+                   alert(msg);
+               }
+        });
+    }else{
+      alert("Error! Your inputname is empty!");
+    }
+    return false;
+}
+function savegene(){
+    var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+    if (inputname.length!=0){
+       alert("Your inputname is "+inputname+"\n\n");
+        $('#data_out').val(JSON.stringify(venn_han.get_sets()));
+        var line=JSON.stringify(venn_han.get_sets());
+        var svg=venn_han.doms.svg;
+        var svg_base64 = svg.svg_base64();
+        $('#span_svg').html($('<a>').attr({href:svg_base64,download:'venn.svg'}).text('download venn plot (svg)'));
+        $.ajax({
+               url: 'savegenelist8.php',
+               cache: false,
+               dataType: 'html',
+               type:'POST',
+               data: {genename:line,img:svg_base64,gname:inputname},
+               error: function(xhr) {
+                 alert('Ajax request error!');
+               },
+               success: function(msg){
+                    $.ajax({
+                        url: 'genelist.php',
+                        cache: false,
+                        dataType:'html',
+                        type:'POST',
+                        error: function(xhr) {
+                        alert('Ajax request error!');
+                        },
+                        success: function(msg){
+                                $("#genelistcontent").html(msg);
+                                $('#genelisttable').dataTable({"aLengthMenu": [[1,5, 10,20, -1], [1,5, 10,20, "All"]],"iDisplayLength":5,"aaSorting": [[ 4, "desc" ]]});
+                        }
+                     });
+                }
+        });
+    }else{
+      alert("Error! Your inputname is empty!");
+    }
+    return false;
+}
+function count_dddfromgene(){
+   var currenttime="";
+   var j=0;
+   $("input[name='glist[]' ]:checked").each(function(){
+        if (j==0){
+              currenttime=$(this).val();
+        }else{
+              currenttime=currenttime+","+$(this).val();
+        }
+        j=j+1;
+   });
+   if (currenttime!=''){
+      if (document.getElementById("gkegg").checked){
+            showmask();
+                 var wc=new Date().valueOf();
+            $.ajax({
+                url: 'genekegg.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,wcfilename:wc},
+                error: function(xhr) {
+                hidemask();
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                     document.getElementById('tablecontent').innerHTML=msg;
+               $('#ktable').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],"aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2] },{ "sType": "allnumeric", "aTargets": [ 1] }  ] ,
+                        "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                     "buttons": ["csv"]
+ });
+               hidemask();
+            }
+        });
+        }
+        if (document.getElementById("ggo").checked){
+            var pvalue=document.getElementById("gpvalue").value;
+            showmask();
+            document.getElementById('tablecontent').innerHTML="<div id=\"tablego1\"></div><div id=\"tablego2\"></div><div id=\"tablego3\"></div>";
+        $.ajax({
+                url: 'genego1.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego1').innerHTML=msg;
+                    $('#gotable0').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+    "buttons": ["csv"]
+                });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'genego2.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego2').innerHTML=msg;
+                    $('#gotable1').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+    "buttons": ["csv"]
+               });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'genego3.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego3').innerHTML=msg;
+                    $('#gotable2').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+    "buttons": ["csv"]
+       });
+                hidemask();
+            }
+        });
+        }//end genego checked
+       if (document.getElementById("gcontiglist").checked){
+           showmask();
+           var line=$("#viewdataset").html();
+                     var wc=new Date().valueOf();
+           $.ajax({
+                url: 'header.php',
+                cache: false,
+                dataType:'html',
+             type:'POST',
+                       data: {wcfilename:wc,"header":line},
+                error: function(xhr) {
+                                  hidemask();
+                 alert('Ajax request error!');
+                },
+                success: function(msg){
+                                     hidemask();
+                       $("#tablecontent").html(msg);
+                     $('#ctable').dataTable( {
+                "bProcessing": true,
+                "sAjaxSource": "genepick.php",
+"sServerMethod": "POST",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "filename", "value":currenttime} );
+                aoData.push( { "name": "wcfilename", "value":wc} );
+                aoData.push( { "name":"header","value":line} );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                "dom": 'iTB<"clear">lfrtip',
+                            "buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [{"sExtends":"download",
+                "sButtonText": "FASTA",
+                "sUrl":"download.php"
+                },{"sExtends":"download",
+                "sButtonText": "AminoAcid",
+                "sUrl":"downloadp.php"
+                },{"sExtends":"download",       "sButtonText": "Save as genelist","sUrl":"savegenelist7.php"}]
+                }
+                      });
+                 }
+                    });
+       }
+       if (document.getElementById("gheatmap").checked){
+           showmask();
+           var line=$("#viewdataset").html();
+           if (line.length!=0){
+               selected=line.split(",");
+               if (selected.length>1){
+                 $.ajax({
+                                url: 'geneheatmapcounter.php',
+                                cache: false,
+                                dataType: 'html',
+                                type:'POST',
+                                data: {filename:currenttime,header:line},
+                                beforeSend:function(){},
+                                error: function(xhr) {
+                                    alert('Ajax request error!');
+                                },
+                                success: function(msg){
+                                                        $("#tablecontent").html(msg);
+                 $.ajax({
+                                url: 'geneheatmap.php',
+                                cache: false,
+                                dataType: 'JSON',
+                                type:'POST',
+                                data: {filename:currenttime,header:line},
+                                beforeSend:function(){},
+                                error: function(xhr) {
+                                    alert('Ajax request error!');
+                                },
+                                success: function(data){
+                                if (data["error"]!=""){
+                                    alert(data["error"]);
+                                }else{
+                                     var h=$("#tablecontent").html();
+                                     $("#tablecontent").html(h+"<button id=\"btnsaveheatmap\" class=\"btn btn-default\">Save as genelist</button><br><div id=\"heatmap\" style='width:600;height:600'></div>");
+                                     var heatmap4=new heatmap($("#heatmap"));
+                                      heatmap4.render(data);
+                                     document.getElementById("btnsaveheatmap").onclick=function(){
+                       var hgname=heatmap4.get_sel_names();
+                       hgname=String(hgname);
+                      if (hgname.length!=0){
+                       var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+                       if (inputname.length!=0){
+                          alert("Your inputname is "+inputname+"\n\n");
+                           $.ajax({
+                               url: 'savegenelist11.php',
+                               cache: false,
+                               dataType: 'html',
+                               type:'GET',
+                               data: {genename:hgname,gname:inputname,title:5},
+                               error: function(xhr) {
+                                 alert('Ajax request error!');
+                               },
+                               success: function(msg){
+                    $.ajax({
+                        url: 'genelist.php',
+                        cache: false,
+                        dataType:'html',
+                        type:'POST',
+                        error: function(xhr) {
+                        alert('Ajax request error!');
+                        },
+                        success: function(msg){
+                                $("#genelistcontent").html(msg);
+                                $('#genelisttable').dataTable({"aLengthMenu": [[1,5, 10,20, -1], [1,5, 10,20, "All"]],"iDisplayLength":5,"aaSorting": [[ 4, "desc" ]]});
+                        }
+                     });
+                                }
+                           });
+                        }else{
+                          alert("Error! Your inputname is empty!");
+                       }
+                      }else{
+                        alert("You select 0 genelist. \n Please click the heatmap picture to select the genelist! ");
+                      }
+                    };
+                                }
+                                  }
+                    });
+                            }//end counter
+                    });
+               }else{
+                   alert("Error! You selected 1 dataset .\n Please go to step2 , select at least two datasets and click done button!");
+               }
+               }else{
+                 alert("Error! You selected 0 dataset .\n Please go to step2 , select at least two datasets and click done button!");
+               }
+           hidemask();
+       }
+       if (document.getElementById("gvenn").checked){
+            if (j<=4 && j>1){
+              $.ajax({
+                url: 'venn.php',
+                cache: false,
+                dataType:'JSON',
+                type:'GET',
+                data: {filename:currenttime},
+                beforeSend:function(){
+                showmask();
+                },
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(data){
+                $("#tablecontent").html('<br><div id="venn" style="width:400;height:400"></div><br><input value="Save selected as Genelist" onclick="savegene();" type="button" class="btn btn-default">  <span id="span_svg"></span><br><textarea id="data_out" cols="100" rows="5"></textarea>');
+                venn_han = new svg_plot.venn($('#venn')[0]);
+                venn_han.load_data(data);
+                },
+                complete:function(){
+                hidemask();
+                }
+               });
+            }else{
+                alert("please pick two or three or four  gene lists.");
+           }
+       }
+    if (document.getElementById("gppichecked").checked){
+           var ppivalue=document.getElementById("gppivalue").value;
+    $.ajax({
+         url: 'ppicheck.php',
+         cache: false,
+         dataType: 'html',
+         type:'POST',
+         data: {genefilename:currenttime,pro:ppivalue},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+          var data=msg.split("\t")
+          if(data.length==2 && data[1].trim()!=""){
+             $("#tablecontent").html(msg+'<iframe name="ppiframe1" width="100%" height="1150px" frameboder="0" border="0" cellspacing="0"></iframe>');
+             document.getElementById("ppiform1").submit();
+           }else{
+$("#tablecontent").html(msg);
+                    }
+         }
+    });
+            hidemask();
+    }
+    }else{
+                 alert("please pick gene lists.");
+    }
+    return false;
+}
+function count_pick1(selections){
+    if (typeof selections === 'undefined') selections = 0;
+    if (selections=='2'){
+       document.getElementById("sumradio").checked = false;
+       document.getElementById("limitradio").checked = true;
+            if (document.getElementById("number4").value==""){
+                document.getElementById("number4").value="0";
+            }
+            if (document.getElementById("number6").value==""){
+                document.getElementById("number6").value="0";
+            }
+    }
+    if (selections=='1'){
+        document.getElementById("sumradio").checked = true;
+        document.getElementById("limitradio").checked = false;
+      if (document.getElementById("number8").value==""){
+            document.getElementById("number8").value="1";
+      }
+    }
+    document.getElementById("itotal").innerHTML='';
+    var pass=false;
+    var v=$("input[name='dmethods']:checked").val();
+    if (v=="sum"){
+        if(document.getElementById("number8").value!='' && document.getElementById("number7").value!=''){
+            pass=true;
+            var s2="";
+            var number2="";
+            var s3="";
+            var number3="";
+            var s4=document.getElementById("number7").value;
+            var number4=document.getElementById("number8").value;
+        }
+    }else{
+        if(document.getElementById("number4").value!='' && document.getElementById("number3").value!='' && document.getElementById("number6").value!='' && document.getElementById("number5").value!=''){
+            pass=true;
+            var s2=document.getElementById("number3").value;
+            var number2=document.getElementById("number4").value;
+            var s3=document.getElementById("number5").value;
+            var number3=document.getElementById("number6").value;
+            var s4="";
+            var number4="";
+        }
+    }
+    if (document.getElementById("number2").value!='' && document.getElementById("number1").value!=''){
+        pass=true;
+    }
+    if (document.getElementById("number8").value!='' && document.getElementById("number1").value!=''){
+        pass=true;
+    }
+    if (pass){
+        $("#tablecontent").html('') ;
+        var s=document.getElementById("number1").value;
+        var number=document.getElementById("number2").value;
+        var log=document.getElementById("log").value;
+        $.ajax({
+                url: 'countpick.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: { num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                document.getElementById("itotal").innerHTML=msg;
+            }
+        });
+   }
+   return false;
+}
+function count_ddd(){
+    showmask();
+    var number='';
+    var s='';
+    var number3='';
+    var s3='';
+    var number4='';
+    var s4='';
+    var number2='';
+    var s2=1;
+    var log="1";
+        s=document.getElementById("number1").value;
+        number=document.getElementById("number2").value;
+        s2=document.getElementById("number3").value;
+        number2=document.getElementById("number4").value;
+       s3=document.getElementById("number5").value;
+        number3=document.getElementById("number6").value;
+       log=document.getElementById("log").value;
+    s=document.getElementById("number1").value;
+    number=document.getElementById("number2").value;
+    log=document.getElementById("log").value;
+    if (number==''){
+            document.getElementById("number2").value="1";
+            number=1;
+    }
+    var v=$("input[name='dmethods']:checked").val();
+    if (v=="sum"){
+        s4=document.getElementById("number7").value;
+        number4=document.getElementById("number8").value;
+        if (number4==''){
+            document.getElementById("number7").value="1";
+            number4=1;
+        }
+    }else{
+        s2=document.getElementById("number3").value;
+        number2=document.getElementById("number4").value;
+        s3=document.getElementById("number5").value;
+        number3=document.getElementById("number6").value;
+        if (number2==''){
+            document.getElementById("number4").value="1";
+            number2=1;
+        }
+        if (number3==''){
+            document.getElementById("number6").value="1";
+            number3=1;
+        }
+    }
+    $.ajax({
+         url: 'countpick.php',
+         cache: false,
+         dataType: 'html',
+         type:'POST',
+         data: { num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           document.getElementById("itotal").innerHTML=msg;
+         }
+    });
+    if (document.getElementById("keggchecked").checked){
+       var t=new Date().valueOf();
+    $.ajax({
+         url: 'kegg.php',
+         cache: false,
+         dataType: 'html',
+         type:'POST',
+         data: { fpkm:t,num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML},
+         error: function(xhr) {
+            hidemask();
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+            document.getElementById('tablecontent').innerHTML=msg;
+            $('#ktable').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]], "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2] },{ "sType": "allnumeric", "aTargets": [ 1] }  ],
+                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+                          });
+            hidemask();
+         }
+    });
+    }else if (document.getElementById("gochecked").checked){
+       var pvalue=document.getElementById("pvalue").value;
+        document.getElementById('tablecontent').innerHTML="<div id=\"tablego1\"></div><div id=\"tablego2\"></div><div id=\"tablego3\"></div>";
+        $.ajax({
+                url: 'go1.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {pvalue:pvalue,num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego1').innerHTML=msg;
+                    $('#gotable0').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+  });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'go2.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {pvalue:pvalue,num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego2').innerHTML=msg;
+                    $('#gotable1').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+               });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'go3.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {pvalue:pvalue,num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego3').innerHTML=msg;
+                    $('#gotable2').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+                });
+                hidemask();
+            }
+        });
+    }
+    if (document.getElementById("contiglistchecked").checked){
+           $("#tablecontent").html("<table id=\"ctable\" width=100% class=\"display\"><thead><tr><th>transcriptid</th><th>Description</th><th>PoolA</th><th>PoolB</th><th>log2(PoolA/PoolB)</th></tr></thead><tbody></tbody></table>");
+           $('#ctable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "pick.php",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "num", "value": number } );
+                aoData.push( { "name": "symbol", "value": s } );
+                aoData.push( { "name": "num2", "value": number2 } );
+                aoData.push( { "name": "symbol2", "value": s2 } );
+                aoData.push( { "name": "num3", "value": number3 } );
+                aoData.push( { "name": "symbol3", "value": s3 } );
+                aoData.push( { "name": "num4", "value": number4 } );
+                aoData.push( { "name": "symbol4", "value": s4 } );
+                aoData.push( { "name": "group", "value": log } );
+                aoData.push( { "name": "id1", "value": document.getElementById("poola").innerHTML } );
+                aoData.push( { "name": "id2", "value": document.getElementById("poolb").innerHTML } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+           "dom": 'iTB<"clear">lfrtip',
+         "buttons": ["csv"] ,
+                "oTableTools": {
+                "aButtons": [{"sExtends":"download",    "sButtonText": "Save as genelist","sUrl":"savegenelist1.php"}]
+                }
+            });
+            hidemask();
+    }
+    if (document.getElementById("heatmapchecked").checked){
+            $.ajax({
+               url: 'heatmaps.php',
+               cache: false,
+               dataType: 'JSON',
+               type:'POST',
+               data: { num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML},
+               error: function(xhr) {
+                 alert('Ajax request error!');
+               },
+               success: function(data){
+               if (data["error"]!=""){
+                          alert(data["error"]);
+               }else{
+              $("#tablecontent").html("<button id=\"btnsaveheatmap\" class=\"btn btn-default\">Save as genelist</button><br><div id=\"heatmap\" style='width:600;height:600'></div>");
+                     var heatmap2=new heatmap($("#heatmap"));
+                  heatmap2.render(data);
+                  document.getElementById("btnsaveheatmap").onclick=function(){
+                       var hgname=heatmap2.get_sel_names();
+                       hgname=String(hgname);
+                      if (hgname.length!=0){
+                       var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+                       if (inputname.length!=0){
+                          alert("Your inputname is "+inputname+"\n\n");
+                           $.ajax({
+                               url: 'savegenelist11.php',
+                               cache: false,
+                               dataType: 'html',
+                               type:'GET',
+                               data: {genename:hgname,gname:inputname,title:2},
+                               error: function(xhr) {
+                                 alert('Ajax request error!');
+                               },
+                               success: function(msg){
+                                   alert("Save genelist done!\n"+"Please go to Gene List Analysis to view the result.");
+                                }
+                           });
+                        }else{
+                          alert("Error! Your inputname is empty!");
+                       }
+                      }else{
+                        alert("You select 0 genelist. \n Please click the heatmap picture to select the genelist! ");
+                      }
+                    };
+               }
+               }
+          });
+          hidemask();
+    }
+    if (document.getElementById("ppichecked").checked){
+           var ppivalue=document.getElementById("ppivalue").value;
+    $.ajax({
+         url: 'ppicheck.php',
+         cache: false,
+         dataType: 'html',
+         type:'POST',
+         data: {num:number,symbol:s,num2:number2,symbol2:s2,num3:number3,symbol3:s3,num4:number4,symbol4:s4,group:log,id1:document.getElementById("poola").innerHTML,id2:document.getElementById("poolb").innerHTML,pro:ppivalue},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+           var data=msg.split("\t")
+          if(data.length==2 && data[1].trim()!=""){
+             $("#tablecontent").html(msg+'<iframe name="ppiframe1" width="100%" height="1150px" frameboder="0" border="0" cellspacing="0"></iframe>');
+             document.getElementById("ppiform1").submit();
+           }else{
+                $("#tablecontent").html(msg);
+           }
+         }
+    });
+            hidemask();
+    }
+    return false;
+}
+function cleangroup(){
+    $("input[name='c2[]' ]").each(function(){
+        $(this).attr('checked',false);
+        $(this).attr('disabled',false);
+    });
+    var table = document.getElementById("analysisgroup");
+    var i= 1;
+    while (i < table.rows.length) {
+        table.deleteRow(i);
+    }
+return false;
+}
+function showdataset(){
+   var table = document.getElementById("analysisgroup");
+   var i= table.rows.length;
+   if (i>0){
+     var line="";
+     for (var index=1;index<i;index++){
+       if (index==1){
+           line=table.rows[index].cells[1].innerHTML;
+        }else{
+           line=line+","+table.rows[index].cells[1].innerHTML;
+       }
+     }
+     var names=line.toLowerCase().split(",");
+     $("input[name='c2[]' ]").each(function(){
+            var value=$(this).val().toLowerCase();
+            if( jQuery.inArray( value, names)>-1){
+                $(this).attr('checked',false);
+                $(this).attr('disabled',true);
+            }else{
+                $(this).attr('checked',false);
+                $(this).attr('disabled',false);
+            }
+      });
+   }else{
+     $("input[name='c2[]' ]").each(function(){
+         $(this).attr('checked',false);
+         $(this).attr('disabled',false);
+     });
+   }
+return false;
+}
+function modifyagroup(id){
+   var target=-1;
+   var table = document.getElementById("analysisgroup");
+   var i= table.rows.length;
+   for (var index=1;index<i;index++){
+     if (table.rows[index].cells[3].innerHTML.indexOf(id)>0){
+         target=index;
+     }
+   }
+   if (target>=-1){
+     document.getElementById("gpname").value=table.rows[target].cells[0].innerHTML;
+     var line="";
+        var lined="";
+     for (var index=1;index<i;index++){
+                if (index!=target){
+       if (index==1){
+           line=table.rows[index].cells[1].innerHTML;
+        }else{
+           line=line+","+table.rows[index].cells[1].innerHTML;
+       }
+        }else{
+                lined=table.rows[index].cells[1].innerHTML;
+                }
+     }
+     var names=line.toLowerCase().split(",");
+     var mark=lined.toLowerCase().split(",");
+     $("input[name='c2[]' ]").each(function(){
+            var value=$(this).val().toLowerCase();
+            if( jQuery.inArray( value, names)>-1){
+                $(this).attr('checked',false);
+                $(this).attr('disabled',true);
+            }else{
+                if (jQuery.inArray( value, mark)>-1){
+                    $(this).prop('disabled',false);
+                  $(this).prop("checked",true);
+                }else{
+                $(this).attr('checked',false);
+                $(this).attr('disabled',false);
+                  }
+            }
+      });
+   }
+return false;
+}
+function deleteagroup(id){
+    var target=-1;
+    var table = document.getElementById("analysisgroup");
+    var i= table.rows.length;
+     for (var index=1;index<i;index++){
+             if (table.rows[index].cells[3].innerHTML.indexOf(id)>0){
+                 target=index;
+             }
+     }
+    if (target>=-1){
+        var r=confirm("Delete this data?\n\nGroup Name:"+table.rows[target].cells[0].innerHTML+"\n"+"Dataset: "+table.rows[target].cells[1].innerHTML+"\n");
+        if (r==true){
+            table.deleteRow(target);
+        }
+    }
+    showdataset();
+}
+function addagroup(){
+var pass=1;
+var t=$('input[name="operation"]:checked').val();
+    if (t==null){
+    var gpname=document.getElementById("gpname").value;
+    var table = document.getElementById("analysisgroup");
+    var i= table.rows.length;
+    for (var index=1;index<i;index++){
+        if (table.rows[index].cells[0].innerHTML==gpname){
+        alert("Error! Group name you entered already exists . Please try to use different name.");
+        pass=0;
+        }
+    }
+    }
+    if (t!=null){
+       $('input[name="operation"]:checked').each(function(){
+          $(this).attr('checked',false);
+       });
+       var target=-1;
+       var table = document.getElementById("analysisgroup");
+       var i= table.rows.length;
+       for (var index=1;index<i;index++){
+            if (table.rows[index].cells[3].innerHTML.indexOf(t)>0){
+                 target=index;
+            }
+       }
+       if (target>=-1){
+            if ($('input[name="gpname"]').val()!=""){
+                 for (var index=1;index<i;index++){
+                  if (index!=target){
+                       gpname=document.getElementById("gpname").value;
+                       if (table.rows[index].cells[0].innerHTML==gpname){
+                         alert("Error! Group name you entered already exists . Please try to use different name.");
+                         pass=2;
+                       }
+                    }
+                }
+              if (pass==1){
+                table.rows[target].cells[0].innerHTML=document.getElementById("gpname").value;
+                var line="";
+                var j=0;
+                $("input[name='c2[]' ]:checked").each(function(){
+                        if (j==0){
+                            line=$(this).val();
+                        }else{
+                            line=line+","+$(this).val();
+                        }
+                        j=j+1;
+                });
+                table.rows[target].cells[1].innerHTML=line;
+              }
+           }else{
+              alert(" Error! Group name is empty.");
+              pass=2;
+           }
+       }
+    }else{
+        var line="";
+        var j=0;
+        $("input[name='c2[]' ]:checked").each(function(){
+          if (j==0){
+             line=$(this).val();
+          }else{
+            line=line+","+$(this).val();
+          }
+          j=j+1;
+        });
+        if ($('input[name="gpname"]').val()!="") {
+            if (line.trim()!="" ){
+                t=new Date().valueOf();
+               var table = document.getElementById("analysisgroup");
+               var i= table.rows.length;
+               var row = table.insertRow(i);
+               var cell1 = row.insertCell(0);
+               cell1.innerHTML=$('input[name="gpname"]').val();
+                var cell2 = row.insertCell(1);
+                cell2.innerHTML=""+line+"";
+                var cell3 = row.insertCell(2);
+                cell3.innerHTML="<input type=\"radio\" name=\"operation\" value=\""+t+"\" onclick=\"modifyagroup("+t+");\">modify   &nbsp;&nbsp; ";
+                var cell4 = row.insertCell(3);
+                cell4.innerHTML="<input type=\"radio\" name=\"operation\" onclick=\"deleteagroup("+t+");\">delete   &nbsp;&nbsp;";
+           }else{
+                    alert(" Error! Dataset is empty.Must have at least one selected dataset.\n");
+                      pass=0;
+            }
+        }else{
+                alert(" Error! Group name is empty.");
+                pass=0;
+        }
+    }
+    if (pass==1 || pass==2){
+        document.getElementById("gpname").value="";
+        showdataset();
+    }
+    return false;
+}
+function showselectdataset(){
+                   var j=0;
+                   var line="";
+                   $("input[name='c3[]' ]:checked").each(function(){
+                        if (j==0){
+                            line=$(this).val();
+                        }else{
+                            line=line+","+$(this).val();
+                        }
+                        j=j+1;
+                   });
+       $("#viewdataset").html(line);
+       var names=line.toLowerCase().split(",");
+       $("input[name='c3[]']").each(function(){
+            var value=$(this).val().toLowerCase();
+            if( jQuery.inArray( value, names)>-1){
+                $(this).attr('checked',true);
+                $(this).attr('disabled',true);
+            }else{
+                $(this).attr('checked',false);
+                $(this).attr('disabled',false);
+            }
+       });
+    return false;
+}
+function cleanselectdataset(){
+   $("#viewdataset").html("");
+     $("input[name='c3[]']").each(function(){
+         $(this).attr('checked',false);
+         $(this).attr('disabled',false);
+     });
+    return false;
+}
+function selectalldataset(){
+   $("#viewdataset").html("");
+                   var j=0;
+                   var line="";
+     $("input[name='c3[]']").each(function(){
+         $(this).prop('checked',true);
+         $(this).prop('disabled',false);
+                        if (j==0){
+                            line=$(this).val();
+                        }else{
+                            line=line+","+$(this).val();
+                        }
+                        j=j+1;
+     });
+       $("#viewdataset").html(line);
+    return false;
+}
+function showclusters(){
+   var table = document.getElementById("analysisgroup");
+   var i= table.rows.length;
+     var pass=0;
+   if (i>2){
+            pass=1;
+}else if (i==2){
+                 alert("Error! At least two groups needed.");
+}else{
+    alert("grouping data needed.");
+}
+    if (pass==1){
+     var line="";
+     for (var index=1;index<i;index++){
+           if  (table.rows[index].cells[0].innerHTML=="") {
+                line=line+"Group"+index+"\t";
+           }else{
+                       line=line+table.rows[index].cells[0].innerHTML+"\t";
+           }
+           if  (table.rows[index].cells[1].innerHTML!="") {
+                       line=line+table.rows[index].cells[1].innerHTML+"\n";
+           }else{
+                alert("Error! Dataset is empty.");
+                 pass=0;
+           }
+     }
+    }
+    if (pass==1){
+    $.ajax({
+         url: 'clustering7.php',
+         cache: false,
+         dataType: 'html',
+             type:'POST',
+         data: { analysisname:$('input[name=analysisname]').val(),analysisdesc: $('#anadesc').val(),usergroup:line},
+         beforeSend:function(){
+         },
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+              $("#clustercontent").hide();
+                $("#clusterresult").html(msg);
+         }
+      });
+    }
+}
+function run_cluster(){
+   var table = document.getElementById("analysisgroup");
+   var i= table.rows.length;
+   if (i>0){
+     var line="";
+     for (var index=1;index<i;index++){
+           if  (table.rows[index].cells[0].innerHTML=="") {
+                line=line+"Group"+index+"\t";
+           }else{
+        line=line+table.rows[index].cells[0].innerHTML+"\t";
+           }
+           if  (table.rows[index].cells[1].innerHTML!="") {
+        line=line+table.rows[index].cells[1].innerHTML+"\n";
+           }else{
+                alert("Error! dataset is empty.");
+           }
+     }
+}
+    var currenttime=new Date().valueOf();
+    $.ajax({
+         url: 'clustering1.php',
+         cache: false,
+         dataType: 'html',
+             type:'POST',
+         data: { analysisname:$('input[name=analysisname]').val(),analysisdesc: $('#anadesc').val(),usergroup:line,clusteringpvalue:$('#clusteringpvalue').val(),clusteringfold:$('#clusteringfold').val(),clustering: $('#clustering').val(),rowsum: $('#clusteringrowsum').val(),dispersion: $('#clusteringdispersion').val(),clusternote:$('input[name=clusternote]').val()},
+         beforeSend:function(){
+         },
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+              $("#clustercontent").hide();
+                $("#clusterresult").html(msg);
+         }
+      });
+    $.ajax({
+         url: 'clustering21.php',
+         cache: false,
+         dataType: 'html',
+             type:'POST',
+         data: {analysisname:$('input[name=analysisname]').val(),analysisdesc: $('#anadesc').val(),usergroup:line,clusteringpvalue:$('#clusteringpvalue').val(),clusteringfold:$('#clusteringfold').val(),clustering: $('#clustering').val(),rowsum: $('#clusteringrowsum').val(),dispersion: $('#clusteringdispersion').val(),clusternote:$('input[name=clusternote]').val(),ctime:currenttime},
+         beforeSend:function(){
+         },
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+              $("#clustercontent").hide();
+              document.getElementById("process1").innerHTML=msg;
+                document.getElementById("process2").innerHTML="running!<img src=\"loading.gif\">";
+                $.ajax({
+                url: 'clustering22.php',
+                cache: false,
+                dataType: 'html',
+               type:'POST',
+                data: {ctime:currenttime},
+                beforeSend:function(){
+                },
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                $("#clustercontent").hide();
+                document.getElementById("process2").innerHTML=msg;
+                     document.getElementById("process3").innerHTML="running! <img src=\"loading.gif\">";
+                hidemask();
+                     $.ajax({
+                        url: 'clustering23.php',
+                        cache: false,
+                        dataType: 'html',
+                        type:'POST',
+                        data: { ctime:currenttime},
+                        beforeSend:function(){
+                        },
+                        error: function(xhr) {
+                                alert('Ajax request error!');
+                        },
+                         success: function(msg){
+                              $("#clustercontent").hide();
+                               document.getElementById("process3").innerHTML=msg;
+                              $.ajax({
+                                        url: 'clustering5.php',
+                                        cache: false,
+                                        dataType: 'html',
+                                        type:'POST',
+                                        data: { ctime:currenttime,vgroup:'group'},
+                                        beforeSend:function(){
+                                        },
+                                        error: function(xhr) {
+                                        alert('Ajax request error!');
+                                        },
+                                        success: function(msg){
+                                         $("#clustercontent").hide();
+                                         $("#clusterresult2").html(msg);
+                                    $('#clustertable').dataTable({"aLengthMenu": [[1, 5, 10,20, -1], [1,5, 10,20, "All"]],"iDisplayLength":1,"bFilter":false,"aaSorting": [[ 0, "asc" ]],"aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [0] }]});
+                                        }
+                                });
+                  }
+                        });
+                }
+                });
+         }
+      });
+      return false;
+}
+function count_cluster(){
+    var currenttime='';
+        $("input[name='pics[]' ]:checked").each(function(){
+        currenttime=currenttime+$(this).val()+",";
+        });
+    if (currenttime!=''){
+           if (document.getElementById("clusterkegg").checked){
+            showmask();
+        $.ajax({
+                url: 'clusterkegg.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime},
+                error: function(xhr) {
+                   hidemask();
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                   document.getElementById('tablecontent').innerHTML=msg;
+               $('#ktable').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],      "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2] },{ "sType": "allnumeric", "aTargets": [ 1] }  ] ,
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+                 });
+                   hidemask();
+            }
+        });
+        }
+        if (document.getElementById("clustergo").checked){
+           var pvalue=document.getElementById("clusterpvalue").value;
+           showmask();
+           document.getElementById('tablecontent').innerHTML="<div id=\"tablego1\"></div><div id=\"tablego2\"></div><div id=\"tablego3\"></div>";
+        $.ajax({
+                url: 'clustergo1.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego1').innerHTML=msg;
+                    $('#gotable0').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+               });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'clustergo2.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego2').innerHTML=msg;
+                    $('#gotable1').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+              });
+                hidemask();
+            }
+        });
+        $.ajax({
+                url: 'clustergo3.php',
+                cache: false,
+                dataType: 'html',
+                type:'POST',
+                data: {filename:currenttime,pvalue:pvalue},
+                error: function(xhr) {
+                alert('Ajax request error!');
+                },
+                success: function(msg){
+                    document.getElementById('tablego3').innerHTML=msg;
+                    $('#gotable2').dataTable({"aLengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]],"aaSorting": [[ 3, "asc" ]],       "aoColumnDefs": [{ "sType": "allnumeric", "aTargets": [ 3 ] },{ "sType": "allnumeric", "aTargets": [ 2 ] },{ "sType": "allnumeric", "aTargets": [ 1 ] } ],
+                                "dom": '<"top"iBlf>rt<"bottom"ip><"clear">',
+                      "buttons": ["csv"]
+             });
+                hidemask();
+            }
+        });
+        }//end clustergo checked
+       if (document.getElementById("clustercontiglist").checked){
+            var header="";
+           var line=document.getElementById("clustergroup").innerHTML.split("<br>");
+           for (i=0;i<line.length;i++){
+              if(line[i].length>0){
+                var data=line[i].split(":");
+              if (data.length==2){
+                  var datas=data[1].split(",");
+              }else{
+                  var datas=data[0].split(",");
+              }
+                for(j=0;j<datas.length;j++){
+                  header=header+"<th>"+datas[j]+"</th>";
+              }
+              }
+           }
+           $("#tablecontent").html("<table id=\"ctable\" width=100% class=\"display\"><thead><tr><th>transcriptid</th><th>Desc</th>"+header+"</thead><tbody></tbody></table>");
+           $('#ctable').dataTable( {
+                "bProcessing": true,
+                "bServerSide": true,
+                "sAjaxSource": "clusterpick.php",
+"sServerMethod": "POST",
+                "fnServerParams": function ( aoData ) {
+                aoData.push( { "name": "filename", "value": currenttime } );
+                },"aLengthMenu": [[10, 25, 50,100, -1], [10, 25, 50,100, "All"]],
+                                "dom": 'iTB<"clear">lfrtip',
+                      "buttons": ["csv"],
+                "oTableTools": {
+                "aButtons": [{"sExtends":"download",    "sButtonText": "Save as genelist","sUrl":"savegenelist3.php"}]
+                }
+            });
+            hidemask();
+       }
+       if (document.getElementById("clusterheatmap").checked){
+                 $.ajax({
+                                url: 'clusterheatmap.php',
+                                cache: false,
+                                dataType: 'JSON',
+                                type:'POST',
+                                data: { filename:currenttime},
+                                beforeSend:function(){},
+                                error: function(xhr) {
+                                alert('Ajax request error!');
+                                },
+                                success: function(data){
+                                 if (data["error"]!=""){
+                                    alert(data["error"]);
+                                }else{
+                                      $("#tablecontent").html("<button id=\"btnsaveheatmap\" class=\"btn btn-default\">Save as genelist</button><br><div id=\"heatmap\" style='width:600;height:600'></div>");
+                                     var heatmap1=new heatmap($("#heatmap"));
+                                     heatmap1.render(data);
+                                     document.getElementById("btnsaveheatmap").onclick=function(){
+                       var hgname=heatmap1.get_sel_names();
+                       hgname=String(hgname);
+                      if (hgname.length!=0){
+                       var inputname=prompt("Please input Gen List name (Maxmium is 20 char) :");
+                       if (inputname.length!=0){
+                          alert("Your inputname is "+inputname+"\n\n");
+                           $.ajax({
+                               url: 'savegenelist11.php',
+                               cache: false,
+                               dataType: 'html',
+                               type:'GET',
+                               data: {genename:hgname,gname:inputname,title:4},
+                               error: function(xhr) {
+                                 alert('Ajax request error!');
+                               },
+                               success: function(msg){
+                                   alert("Save genelist done!\n"+"Please go to Gene List Analysis to view the result.");
+                                }
+                           });
+                        }else{
+                          alert("Error! Your inputname is empty!");
+                       }
+                      }else{
+                        alert("You select 0 genelist. \n Please click the heatmap picture to select the genelist! ");
+                      }
+                    };
+                                }
+                                }
+                    });
+           hidemask();
+       }
+       if (document.getElementById("clusterppichecked").checked){
+           var ppivalue=document.getElementById("cppivalue").value;
+           $.ajax({
+         url: 'ppicheck.php',
+         cache: false,
+         dataType: 'html',
+         type:'POST',
+         data: {clusterfilename:currenttime,pro:ppivalue},
+         error: function(xhr) {
+           alert('Ajax request error!');
+         },
+         success: function(msg){
+                    var data=msg.split("\t")
+          if(data.length==2 && data[1].trim()!=""){
+             $("#tablecontent").html(msg+'<iframe name="ppiframe1" width="100%" height="1150px" frameboder="0" border="0" cellspacing="0"></iframe>');
+             document.getElementById("ppiform1").submit();
+           }else{
+$("#tablecontent").html(msg);
+          }
+         }
+            });
+            hidemask();
+       }
+    }
+return false;
+}
+function searchselectall(){
+   if (document.getElementById("checkallid").checked){
+     $("input[name='s1[]' ]").each(function(){
+         $(this).attr('checked',true);
+         $(this).attr('disabled',false);
+     });
+         }
+    return false;
+}
+function showetc(ids){
+    $('#etc'+ids).hide();
+    $('#etcct'+ids).show();
+    return false;
+}
+function hideetc(ids){
+    $('#etc'+ids).show();
+    $('#etcct'+ids).hide();
+    return false;
+}
+function viewwordcloud(id){
+     $("#imagecontent").html("<img src=data/"+id+".png>");
+return false;
+}
+function viewwordclouds(id,name){
+     if (name=="P"){
+         $("#imagecontentP").html("<img src=data/"+id+".png>");
+     }
+     if (name=="F"){
+         $("#imagecontentF").html("<img src=data/"+id+".png>");
+     }
+     if (name=="C"){
+         $("#imagecontentC").html("<img src=data/"+id+".png>");
+     }
+return false;
+}
+function showmask() {
+        var maskHeight = $(document).height() - 5;
+        var maskWidth = $(document).width() - 5;
+        $('#mask').css({ 'width': maskWidth, 'height': maskHeight });
+        $('#mask').fadeIn(1000);
+        $('#mask').fadeTo("fast", 0.8);
+        var winH = $(window).height();
+        var winW = $(window).width();
+        $("#window").css('top', winH / 2 - $("#window").height() / 2);
+        $("#window").css('left', winW / 2 - $("#window").width() / 2);
+        $("#window").fadeIn(2000);
+return false;
+}
+function hidemask() {
+        $('#mask').fadeOut('fast');
+        $("#window").fadeOut('fast');
+return false;
+}
+</script>
+<script type="text/javascript">
+/************************************************************************************************************
+Show hide content with slide effect
+Copyright (C) August 2010  DTHMLGoodies.com, Alf Magne Kalleland
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+Dhtmlgoodies.com., hereby disclaims all copyright interest in this script
+written by Alf Magne Kalleland.
+Alf Magne Kalleland, 2010
+Owner of DHTMLgoodies.com
+************************************************************************************************************/
+var dhtmlgoodies_slideSpeed = 10;       // Higher value = faster
+var dhtmlgoodies_timer = 10;    // Lower value = faster
+var objectIdToSlideDown = false;
+var dhtmlgoodies_activeId = false;
+var dhtmlgoodies_slideInProgress = false;
+var dhtmlgoodies_slideInProgress = false;
+var dhtmlgoodies_expandMultiple = false; // true if you want to be able to have multiple items expanded at the same time.
+function showHideContent(e,inputId)
+{
+        document.getElementById("Img").src="minus.gif";
+        if(dhtmlgoodies_slideInProgress)return;
+        dhtmlgoodies_slideInProgress = true;
+        if(!inputId)inputId = this.id;
+        inputId = inputId + '';
+        var numericId = inputId.replace(/[^0-9]/g,'');
+        var answerDiv = document.getElementById('aoption_a' + numericId);
+        objectIdToSlideDown = false;
+        if(!answerDiv.style.display || answerDiv.style.display=='none'){
+                if(dhtmlgoodies_activeId &&  dhtmlgoodies_activeId!=numericId && !dhtmlgoodies_expandMultiple){
+                        objectIdToSlideDown = numericId;
+                        slideContent(dhtmlgoodies_activeId,(dhtmlgoodies_slideSpeed*-1));
+                }else{
+                        answerDiv.style.display='block';
+                        answerDiv.style.visibility = 'visible';
+                        slideContent(numericId,dhtmlgoodies_slideSpeed);
+                }
+        }else{
+                slideContent(numericId,(dhtmlgoodies_slideSpeed*-1));
+                dhtmlgoodies_activeId = false;
+                document.getElementById("Img").src="plus.gif";
+        }
+}
+function slideContent(inputId,direction)
+{
+        var obj =document.getElementById('aoption_a' + inputId);
+        var contentObj = document.getElementById('aoption_ac' + inputId);
+        height = obj.clientHeight;
+        if(height==0)height = obj.offsetHeight;
+        height = height + direction;
+        rerunFunction = true;
+        if(height>contentObj.offsetHeight){
+                height = contentObj.offsetHeight;
+                rerunFunction = false;
+        }
+        if(height<=1){
+                height = 1;
+                rerunFunction = false;
+        }
+        obj.style.height = height + 'px';
+        var topPos = height - contentObj.offsetHeight;
+        if(topPos>0)topPos=0;
+        contentObj.style.top = topPos + 'px';
+        if(rerunFunction){
+                setTimeout('slideContent(' + inputId + ',' + direction + ')',dhtmlgoodies_timer);
+        }else{
+                if(height<=1){
+                        obj.style.display='none';
+                        if(objectIdToSlideDown && objectIdToSlideDown!=inputId){
+                                document.getElementById('aoption_a' + objectIdToSlideDown).style.display='block';
+                                document.getElementById('aoption_a' + objectIdToSlideDown).style.visibility='visible';
+                                slideContent(objectIdToSlideDown,dhtmlgoodies_slideSpeed);
+                        }else{
+                                dhtmlgoodies_slideInProgress = false;
+                        }
+                }else{
+                        dhtmlgoodies_activeId = inputId;
+                        dhtmlgoodies_slideInProgress = false;
+                }
+        }
+}
+function initShowHideDivs()
+{
+        var divs = document.getElementsByTagName('DIV');
+        var divCounter = 1;
+        for(var no=0;no<divs.length;no++){
+                if(divs[no].className=='advance_option'){
+                        divs[no].onclick = showHideContent;
+                        divs[no].id = 'advance_option'+divCounter;
+                        var answer = divs[no].nextSibling;
+                        while(answer && answer.tagName!='DIV'){
+                                answer = answer.nextSibling;
+                        }
+                        answer.id = 'aoption_a'+divCounter;
+                        contentDiv = answer.getElementsByTagName('DIV')[0];
+                        contentDiv.style.top = 0 - contentDiv.offsetHeight + 'px';
+                        contentDiv.className='content';
+                        contentDiv.id = 'aoption_ac' + divCounter;
+                        answer.style.display='none';
+                        answer.style.height='1px';
+                        divCounter++;
+                }
+        }
+}
+window.onload = initShowHideDivs;
+</script>
+</head>
+<body>
+<div align="center">
+<img src="ftwbanner.png" width="800" usemap="#homemap">
+<map name="homemap">
+<area shape="rect" coords="0,0,550,150" href="index.php" alt="ftw_genome2021" >
+<area shape="rect" coords="550,0,800,60" href="index.php" alt="ftw_genome2021" >
+<area shape="rect" coords="550,60,640,150" href="javascript:showstat()" alt="Statistics" >
+<area shape="rect" coords="640,60,705,150" href="javascript:showhelp()" alt="Help" >
+<area shape="rect" coords="705,60,800,150" href="javascript:showabout()" alt="About Us" >
+</map>
+</div>
+<div id="mask"></div>
+<div id="window">
+    <table border="0">
+        <tr>
+            <td align="center"><span style="color : Red; font-weight : bold" >Data processing, please wait...</span></td>
+        </tr>
+        <tr>
+            <td style="text-align:center"><img src="loading.gif" border="0" /></td>
+        </tr>
+    </table>
+</div>
+<div class="a_tab" id="a_tab" >
+      <ul class="tabs">
+        <li><a href="#tab5">Home</a></li>
+        <li><a href="#tab1">Full-text search </a></li>
+        <li><a href="#tab2">Sequence Search / BLAST</a></li>
+        <li><a href="#tab3" onclick="showlibrary();">Pairwise Comparison</a></li>
+        <li><a href="#tab4">Import Genelist</a></li>
+        <li><a href="#tab6">Clustering</a></li>
+        <li><a href="#tab7" onclick="showpathway();">KEGG GlobalView</a></li>
+        <li><a href="#tab8" onclick="showgenelist();">Gene List Analysis</a></li>
+    
+      </ul>
+    <div class="tab_container">
+        <div id="tab5" class="tab_content"><br><br>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Forcipomyia taiwana (F. taiwana) is one of the most notorious hematophagic midges in Taiwan and Southern China. The de novo assembly of F. taiwana resulted in a genome of 130,434,311 bp assembled in 113 scaffolds. The maximum length of the scaffolds in the genome assembly is about 7.5 Mbp, and N50 is 2,601,316 bp. The genome annotation is done by MAKER3(Holt and Yandell, 2011), there are total 16987 predicted genes and 22164 predicted transcripts.</p>
+<br>
+<table border=1 cellspacing=0 cellpadding=0 width=423 style='width:317.25pt' align="center">
+ <tr style='height:60.0pt'>
+  <td width=302 style='width:226.5pt;padding:0cm 0cm 0cm 0cm;height:60.0pt'>
+  <p></p>
+  </td>
+  <td width=122 style='width:91.5pt;padding:0cm 0cm 0cm 0cm;height:60.0pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>Forcipomyia
+  taiwana</span></p>
+  </td>
+ </tr>
+ <tr style='height:16.5pt'>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>Number
+  of Scaffold</span></p>
+  </td>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>113</span></p>
+  </td>
+ </tr>
+ <tr style='height:16.5pt'>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>Total
+  bases</span></p>
+  </td>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>130,434,311</span></p>
+  </td>
+ </tr>
+ <tr style='height:16.5pt'>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>Average
+  Scaffold Length&nbsp;</span></p>
+  </td>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>1,154,286</span></p>
+  </td>
+ </tr>
+ <tr style='height:16.5pt'>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>Maxmum
+  Scaffold Length&nbsp;</span></p>
+  </td>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>7,575,150</span></p>
+  </td>
+ </tr>
+ <tr style='height:16.5pt'>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>N50
+  (bp)&nbsp;</span></p>
+  </td>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>2,601,316</span></p>
+  </td>
+ </tr>
+ <tr style='height:16.5pt'>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>Number
+  of MAKER3 predicted genes</span></p>
+  </td>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>16,987</span></p>
+  </td>
+ </tr>
+ <tr style='height:16.5pt'>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>Number
+  of MAKER3 predicted transcripts</span></p>
+  </td>
+  <td style='padding:0cm 0cm 0cm 0cm;height:16.5pt'>
+  <p align=center style='text-align:center'><span lang=EN-US
+  style='font-size:7.5pt;font-family:"Arial","sans-serif";color:#333333'>22,164</span></p>
+  </td>
+ </tr>
+</table>
+<br><br>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Next generation sequencing (NGS) technologies bring the gene profiling study into big-data science era. However, the increasing amount of data made itself a problem for viewing data and deciphering the biological implication from it.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;In this study,we provide a robust web platform to retrieve the gene (by its transcripts) expression data . Starting from columwise data of RNA-Seq mapping results (FPKM/RPKM), the build-in annotation database attached to the gene expression data; thus, biological meaning of the complex data is unlocked in the intuitive interface.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Currently, the platform accepts transcript expression data table in FPKM value, derived from Cufflinks or other tools that map reads to Forcipomyia taiwana genome. Please check [<a href="ftwissues.html" target="_blank">help/important issue</a>] section for the details about F. taiwana genome and General Feature Format(GFF).</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Otherwise, you can also use the [<a href="https://hub.docker.com/r/lsbnb/docexpress_fastqc_ftw">docexpress_fastqc_ftw</a>] which is a docker image with built-in F. taiwana genome for generating the FPKM table through your own RNA-Seq data. [<a href="docexpress_fastqc_ftw.pdf">User manual for docexpress_fastqc_ftw </a>]</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Once the data uploaded, the website will be constructed automatically with all these functions:</p>
+
+    &nbsp;&nbsp;&nbsp;&nbsp;<img src="list.png" width="20">Text Searching transcripts by a keyword in gene symbol, gene description and KEGG pathway name.<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<img src="list.png" width="20">Pairwise comparison between two conditions<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<img src="list.png" width="20">Clustering Analysis<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<img src="list.png" width="20">Sets of the gene list: uploading, management, and the algebora<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<img src="list.png" width="20">Function Enrichment of GO and KEGG on a gene list Two dimention clustered heatmap<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<img src="list.png" width="20">Browsing via KEGG pathway's classical view<br>
+
+<br>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;If you don't have any RNA-Seq data to analysis, you can derictly click [<a href="index.php">here</a>] to browse this platform.</p>
+
+
+<br><br>
+        </div>
+        <div id="tab1" class="tab_content">
+                     <h2>Full-text search<img src="search.gif" width="25" height="25" aligh="middle"></h2>
+                     <form>
+                     <table><tr><td>Enter your keywords:</td></tr>
+                           <tr><td><input id="searchname" name="searchname" type="text" value=""></td></tr>
+                            <tr><td><br></td></tr>
+                        <tr><td><b>Search DB:</b>  <input type="checkbox" id="sblastx" value="blastx" checked>blast/NR   <input type="checkbox" id="skegg" value="kegg">KEGG   <input type="checkbox" value="go" id="sgo">GO    <input type="checkbox" id="spfam" value="pfam">pFAM   </td></tr>
+                        <tr><td><b>Show data:</b> <input type="checkbox" id="signalp" value="signalp">SignalP    <input type="checkbox" id="tmhmm" value="tmhmm">tmHMM </td></tr>
+                            <tr><td><br><br></td></tr>
+                            <tr><td><button type="button" id="btn" onclick="search();" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span>  send</button>
+                                <button type="reset"  class="btn btn-default" ><span class="glyphicon glyphicon-refresh"></span>  reset</button></td></tr>
+                     </table>
+                     </form>
+        </div>
+        <div id="tab2" class="tab_content">
+            <div id="blastresult"></div>
+            <div id="blastcontent">
+                        <h2>BLAST</h2><table width=100%>
+                        <tr><td width=90%><strong>Choose program and database to blast:</strong></td>
+                        <td><span class="btn btn-default btn-xs" onclick="showblastresult();"><span class="glyphicon glyphicon-list-alt" ></span> View BLAST Result</span>
+                        </td></tr></table>
+                        <form name="form" method="POST" enctype="multipart/form-data">
+                        <p>
+                        * Database
+                        <select name="db" id="db">
+                        <option value="1" selected="selected">Taiwana CDS Sequence</option>
+                        <option value="3" selected="selected">Taiwana Genome Sequence</option>
+                        </select>
+                        </p>
+                        <p>
+                        * Program
+                        <select name="program" id="program" onclick="changeOption();">
+                        <option value="blastn" selected="selected">blastn (search nucleotide databases by a nucleotide query)</option>
+                        <option value="megablast">megablast (implements greedy algorithm for the DNA sequence gapped alignment search)</option>
+                        <option value="tblastx">tblastx (search translated nucleotide database by a translated nucleotide query)</option>
+                        <option value="tblastn">tblastn (search translated nucleotide database by a protein query)</option>
+                        <option value="blastp">blastp (search protein databases by a protein query)</option>
+                        </select>
+                        </p>
+                <p>   Job Note
+                <input style="FONT-SIZE: 14px; COLOR: rgb(21,21,42)" size="52" name="note" id="note"/> </p>
+                <p>* Enter sequence below in <span class="style1"><a href="http://www.ncbi.nlm.nih.gov/blast/fasta.shtml" TARGET="_blank">FASTA</a></span> format  <input type=button value=example onclick="fillexample();" class="btn btn-default btn-xs"><br>
+                <textarea cols="80" rows="10" name="sequence" id="sequence"></textarea><br/><br/>
+                Or load it from disk<br>
+                <input type="file" size="50" name="blastfileUpload" id="blastfileUpload"> (Please make sure filesize < 2G)
+                </p>
+                <div class="advance_option">
+                    <p><img id="Img" src="plus.gif"/>Advance Option</p>
+                </div>
+                <div class="aoption">
+                <div>
+                <table>
+                <tr><td align="right">
+                Max target :
+                </td><td>
+                <input style="FONT-SIZE: 14px; COLOR: rgb(21,21,42)" size="10" id="max_target" name="max_target" value="10"/> <a href="./help.html#max" target="_blank"><img src="./qmark.gif" border="0" /></a> </td></tr>
+                <tr><td align="right">
+                E-value :
+                </td><td>
+                <input style="FONT-SIZE: 14px; COLOR: rgb(21,21,42)" size="10" id="e_value" name="e_value" value="0.01"/> <a href="./help.html#evalue" target="_blank"><img src="./qmark.gif" border="0" /></a> (e.g. 1.0E-2 = 0.01) </td></tr>
+                <tr><td align="right" id="match_penaltykey">
+                Match/Mismatch penalty :
+                </td><td id="match_penaltyvalue">
+                <select name="match_penalty" id="match_penalty">
+                <option value="1,-2"> 1, -2 </option>
+                <option value="1,-3"> 1, -3 </option>
+                <option value="1,-4"> 1, -4 </option>
+                <option value="2,-3" selected="selected"> 2, -3 </option>
+                <option value="4,-5"> 4, -5 </option>
+                <option value="1,-1"> 1, -1 </option>
+                </select> <a href="./help.html#penalty" target="_blank"><img src="./qmark.gif" border="0" /></a>
+                </td></tr>
+                <tr><td align="right">
+                Gap creation :</td><td>
+                <select name="gap_creation" id="gap_creation">
+                <option value="99" selected="selected"> Linear </option>
+                <option value="4,4"> Existence: 4   Extension: 4 </option>
+                <option value="2,4"> Existence: 2   Extension: 4 </option>
+                <option value="0,4"> Existence: 0   Extension: 4 </option>
+                <option value="3,3"> Existence: 3   Extension: 3 </option>
+                <option value="6,2"> Existence: 6   Extension: 2 </option>
+                <option value="5,2"> Existence: 5   Extension: 2 </option>
+                <option value="4,2"> Existence: 4   Extension: 2 </option>
+                <option value="2,2"> Existence: 2   Extension: 2 </option>
+                </select>
+                                         <a href="./help.html#creation" target="_blank"><img src="./qmark.gif" border="0" /></a> </td></tr>
+                <tr>
+                <td align="right">
+                Word size :</td><td>
+                <input style="FONT-SIZE: 14px; COLOR: rgb(21,21,42)" size="8" name="word_size" id="word_size" value="11"/> <a href="./help.html#word" target="_blank"><img src="./qmark.gif" border="0" /></a> </td></tr>
+                <tr><td align="right"><input id="blastfilter" name="blastfilter[]" type="checkbox" value="F"/></td><td><label> Turn off the complexity filter </label><a href="http://www.ncbi.nlm.nih.gov/BLAST/blastcgihelp.shtml#filter" target="_blank"><img src="./qmark.gif" border="0" /></a> </td></tr>
+                </table>
+                </div>
+                </div>
+                <br><br>
+                <table>
+                <tr><td>
+                <button onclick="return ajaxFileUpload();" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span>  send</button>
+                </td><td width="20"></td>
+                <td>
+                <button type="reset"  class="btn btn-default" id="clean" ><span class="glyphicon glyphicon-refresh"></span>  reset</button></td></tr></table>
+                </form>
+            </div>
+        </div>
+        <div id="tab3" class="tab_content">
+                  <h2>Pairwise Comparison</h2>
+                  <div id="librarycontent"></div>
+                <span id="count_ddd" style="display:none">
+                <br>
+              <form id="kegggoform">
+                        <table width=100% >
+                        <tr><td width=60% >2. Apply Data Filter<br>
+     &nbsp;&nbsp;<input id="sumradio" type="radio" name="dmethods" value="sum" checked>
+                        Summation of expression levels by PoolA and PoolB
+                        <select id="number7" onchange="count_pick1('1');">
+                        <option value="1" selected> >= </option>
+                        <option value="2"> <= </option>
+                        <option value="3"> > </option>
+                        <option value="4"> < </option>
+                        <option value="5"> = </option>
+                        </select>
+                        <input id="number8" type="text" value="1" size="4" onkeyup="count_pick1('1');"><br>
+     &nbsp;&nbsp;<input id="limitradio" type="radio" name="dmethods" value="limit">
+                        PoolA expression level
+                        <select id="number3" onchange="count_pick1('2');">
+                        <option value="1" selected> >= </option>
+                        <option value="2"> <= </option>
+                        <option value="3"> > </option>
+                        <option value="4"> < </option>
+                        <option value="5"> = </option>
+                        </select>
+                        <input id="number4" type="text" value="1" size="4" onkeyup="count_pick1('2');">
+                         &nbsp;&nbsp;PoolB expression level
+                        <select id="number5" onchange="count_pick1('2');">
+                        <option value="1" selected> >= </option>
+                        <option value="2"> <= </option>
+                        <option value="3"> > </option>
+                        <option value="4"> < </option>
+                        <option value="5"> = </option>
+                        </select>
+                          <input id="number6" type="text" value="1" size="4" onkeyup="count_pick1('2');"><br>
+                        </td>
+                        <td></td>
+                        </tr>
+                        <tr><td width=60%><br>3. Set the comparing scheme<br>
+                        &nbsp;&nbsp;fold change cutoff:
+                        <select id="number1" onchange="count_pick1();">
+                        <option value="1" selected> >= </option>
+                        <option value="2"> <= </option>
+                        <option value="3"> > </option>
+                        <option value="4"> < </option>
+                        <option value="5"> = </option>
+                        </select>
+                        <input id="number2" type="text" value="1" size="4" onkeyup="count_pick1();">
+                        &nbsp;&nbsp;expression pattern: <select id="log" onchange="count_pick1();">
+                        <option value="1" selected> ALL </option>
+                        <option value="2"> PoolA > PoolB </option>
+                        <option value="3"> PoolA < PoolB </option>
+                        <option value="4"> PoolA = PoolB </option>
+                        </select>
+                        </td>
+                        <td id="itotal" rowspan="2"></td>
+                        </tr>
+                        <tr><td colspan=2><br>4. Select Analytic Approach:</td></tr>
+                        <tr><td>&nbsp;&nbsp;<input type="radio" id="contiglistchecked" name="kmethods" value="cotiglist" checked>Show Gene List</td><td></td></tr>
+                        <tr><td>&nbsp;&nbsp;<input type="radio" id="gochecked" name="kmethods" value="go">Calculate GO term enrichment&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default p value cutoff <select id="pvalue"><option value="0.1" selected>0.1 </option><option value="0.01"> 0.01 </option> <option value="0.001"> 0.001</option><option value="0.0001"> 0.0001 </option></select></td><td></td></tr>
+                        <tr><td>&nbsp;&nbsp;<input type="radio" id="keggchecked" name="kmethods" value="kegg" >Calculate KEGG pathway enrichment</td><td></td><td></td></tr>
+                        <tr><td>&nbsp;&nbsp;<input type="radio" id="heatmapchecked" name="kmethods" value="heatmap" >Draw heatmap with 2D clustering (Max 3000 transcripts)</td><td></td></tr>
+<tr><td>&nbsp;&nbsp;<input type="radio" id="ppichecked" name="kmethods" value="ppi" disabled>Map on Protein Network   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Probability<select id="ppivalue">
+                        <option value="0.4" selected>0.4 </option><option value="0.5"> 0.5 </option> <option value="0.06"> 0.6</option><option value="0.7"> 0.7 </option><option value="0.8"> 0.8 </option><option value="0.9"> 0.9 </option><option value="1"> 1 </option></select>
+</td><td></td></tr>
+                        <tr><td colspan=2><br><br><br> <button type="button" id="btn" onclick="count_ddd();" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span>  send</button>        <button type="reset"  class="btn btn-default"  onclick="clean_fchange1();"><span class="glyphicon glyphicon-refresh"></span>  reset</button>
+                        <br></td></tr>
+                        </table>
+                </span>
+                </form>
+                <br>
+              </div>
+        <div id="tab4" class="tab_content">
+                  <h2>Import Genelist</h2>
+                        1.Enter transcriptid:(one id per line)<input type=button value=example onclick="fillcontigexample();" class="btn btn-default btn-xs">
+                        <form method="post" enctype="multipart/form-data">
+                        <textarea name="contigid" id="contigid" cols="34" rows="5"></textarea><br><p>Or upload from file:<br>
+                        <input type="file" size="40" id="contigUpload" name="contigUpload">    <a href="downloadfile.php">download example</a></p><br>
+                        <br><br>
+                        <div id="contiguploadtxt"></div>
+                        <div id="contiguploadlist"></div>
+                        <br><br>
+                        2.Select Analytic Approach:<br>
+                        <input type="radio" id="fcontiglist" name="methods" value="contiglist" checked>Show Gene List (Max. 65535 transcriptid)<br>
+                        <input type="radio" id="fgo" name="methods" value="go">Calculate GO term enrichment&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;default p value cutoff <select id="fpvalue"><option value="0.1" selected>0.1 </option><option value="0.01"> 0.01 </option> <option value="0.001"> 0.001</option><option value="0.0001"> 0.0001 </option></select><br>
+                        <input type="radio" id="fkegg" name="methods" value="kegg" >Calculate KEGG pathway enrichment<br>
+                        <input type="radio" id="fheatmap" name="methods" value="heatmap">Draw heatmap with 2D clustering (Max. 3000 transcriptid)<br>
+  <input type="radio" id="fppichecked" name="methods" value="ppi" disabled>Map on Protein Network   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Probability<select id="fppivalue">
+                        <option value="0.4" selected>0.4 </option><option value="0.5"> 0.5 </option> <option value="0.06"> 0.6</option><option value="0.7"> 0.7 </option><option value="0.8"> 0.8 </option><option value="0.9"> 0.9 </option><option value="1"> 1 </option></select>
+<br><br><br>
+                         <button type="button" onclick="contigfileUpload();" class="btn btn-default"><span class="glyphicon glyphicon-ok"></span>  send</button>        <button type="reset"  class="btn btn-default" id="clean1" ><span class="glyphicon glyphicon-refresh"></span>  reset</button>
+                        </form>
+                <br>
+                <br>
+        </div>
+        <div id="tab6" class="tab_content">
+                    <div id="clustercontent">
+                <table width=100%><tr><td width=90%> <h2>Clustering</h2>
+                  </td><td><span class="btn btn-default btn-xs" onclick="showclusterresult();"><span class="glyphicon glyphicon-list-alt" ></span> View Clustering Result</span>
+                  </td></tr></table>
+                <h4>Create an Analysis
+                <form>
+                <table ><tr><td>
+                Analysis Name:</td><td><input type="text" name="analysisname"></td></tr>
+                <tr><td>Description:</td><td><textarea name="anadesc" id="anadesc" row="2" cols="60"></textarea></td></tr>
+                </table>
+                <p>
+                <div id="presentgroup">
+                Present grouping:
+                <table id="analysisgroup" style="border: 1px solid #00bfff;"  CellSpacing=0 width="600">
+                <tr><th width="15%">Group Name</th><th width="15%">Dataset</th><th colspan=2 width="20%">operation</th></tr>
+                </table>
+                </div>
+                <br>
+                Add new a group to this Analysis
+                <div id="librarytable"><table width="98%"><tr><th></th><th width="20%"></th><th width="20%"></th><th width="20%"></th><th width="20%"></th></tr>
+                <tr ><td>Group Name:</td><td><input type="text" id="gpname" name="gpname" ></td><td colspan="3"></td></tr>
+                <tr><td colspan="5">Selecting Dataset:</td></tr>
+<?php
+    $title=array();
+    $logname=$filepath."genes.log";
+    if (file_exists($logname)){
+        $handle = fopen($logname, "r");
+        $i=0 ;
+       while (($data = fgets($handle, 4096)) !== false) {
+         if (trim($data)!=''){
+               $result=explode("=",$data);
+               foreach($result as $value){
+                  if (trim($value)!=""){
+                    if (trim($value)=="null"){
+                        $title[$i]="";
+                    }else{
+                        $title[$i]=trim($value);
+                    }
+                    $i=$i+1;
+                  }
+               }
+         }
+       }
+       fclose($handle);
+    }
+    $counter=0;
+    $name=array();
+    $fpkmname="";
+    $fpkmname=$filepath."genes.matrix";
+    if (file_exists($fpkmname)){
+        $handle = fopen($fpkmname, "r");
+       $j=0;
+       while (($data = fgets($handle, 4096)) !== false) {
+         if (trim($data)!=''){
+            if($j==0){
+               $value=explode("\t",$data);
+              $counter=count($value);
+               for($i=1;$i<$counter;$i++){
+                    $name[$i]=trim($value[$i]);
+               }
+            }else{
+                continue;
+            }
+            $j=$j+1;
+         }
+       }
+       fclose($handle);
+    }
+    if (count($title)==0){
+         for($i=1;$i<$counter;$i++){
+             $title[$i]="";
+         }
+    }
+    $d=1;
+    $empty=1;
+    $labels=array("","This study","","","","BMC Genomics, 3;22(1):792","","","");
+    $counter=$counter+$empty;
+    for ($i=1;$i<$counter;$i++){
+        //add empty line
+        if ($i==5 ){
+             echo "<tr><td colspan=5>&nbsp;<br></td></tr>";
+        }
+        $value1=$name[$d];
+        $value2=$title[$d];
+        if ($i%4==1){
+            echo "<tr>";
+            echo "<td><b>".$labels[$i]."</b></td>";
+        }
+        //add empty column
+        if ($i==4){
+            echo "<td></td>";
+        }else{
+            echo "<td><input type=\"checkbox\" name=\"c2[]\" value=\"".$value1."\" title=\"".$value2."\"><label title=\"".$value2."\">".$value1."</label></td>";
+            $d=$d+1;
+        }
+        if ($i%4==0){
+            echo "</tr>";
+        }
+    }
+    $j=($i-1)%4;
+    if ($j!=0){
+        $counter=4-$j;
+        echo "<td colspan=".$counter."></td></tr>";
+    }
+    echo "<tr><td colspan=5>&nbsp;<br></td></tr>";
+    echo '<tr><td colpan="5" align="center" nowrap><input type="button"  value="Add to List" onclick="addagroup();" class="btn btn-default">    <input type="button" value="Reset" id="clean" onclick="showdataset();" class="btn btn-default"></td></tr>';
+?>
+                </table>
+                </div>
+                </p>
+                <hr><br>
+                <input type="button" value="Add this Analysis Scheme" onclick="showclusters();" class="btn btn-default">
+                <input type="reset" value="Clear All" id="clean" onclick="cleangroup();" class="btn btn-default">
+                </form>
+                </h4>
+                </div>
+              <div id="clusterresult">
+              </div>
+                <br>
+              <div id="clusterresult2">
+              </div>
+                <br>
+        </div>
+        <div id="tab7" class="tab_content">
+                <h2>KEGG GlobalView</h2>
+                <div id="keggcontent"></div>
+                <br>
+                <br>
+        </div>
+        <div id="tab8" class="tab_content">
+              <h2>Gene List</h2>
+               <div id="genelistcontent"></div>
+        </div>
+    </div>
+</div>
+<div id="tablecontent">
+</div>
+<br>
+<br>
+<hr align="left" color="#5E777D">
+<table width="100%" align="center">
+<tr><td align="center" height="40"><p style="font-size:12px;line-height:150%">Copyright &copy; 2021,<a href="http://www.iis.sinica.edu.tw/index.htm" >Institute of Information Science</a>, <a href="http://www.sinica.edu.tw/main_e.shtml">Academia Sinica</a>, TAIWAN.</p></td></tr>
+<tr><td align="center" height="20"><p align="center" style="font-size:12px;line-height:150%">All Rights reserved.</p>
+</td></tr></table>
+<br>
+</body>
+</html>
