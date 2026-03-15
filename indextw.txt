@@ -1,7 +1,7 @@
 <?php include('lock1.php');?>
 <html>
 <head>
-<title>ftw_genome2021</title>
+<title>ftw</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <script type="text/javascript" src="js/jquery-latest.min.js"></script>
 <script type="text/javascript" src="js/ajaxfileupload.js"></script>
